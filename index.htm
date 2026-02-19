@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Station Météo F5IOR - v2.9 Expert Mobile</title>
+<script src="https://cdn.jsdelivr.net/npm/canvas-gauges@2.1.7/gauge.min.js"></script>
+<style>
+:root {
+  --bg-color: #0f172a;
+  --card-bg: rgba(30, 41, 59, 0.8);
+  --accent-color: #38bdf8;
+  --text-main: #f1f5f9;
+  --text-dim: #94a3b8;
+  --glass-border: rgba(255, 255, 255, 0.15);
+  --alarm-red: #ff4757;
+}
+
+body { 
+  font-family: 'Segoe UI', Roboto, sans-serif; 
+  background: radial-gradient(circle at top, #1e293b 0%, #0f172a 100%);
+  color: var(--text-main); 
+  margin: 0; padding: 10px; min-height: 100vh;
+}
+
+header { 
+  display: flex; align-items: center; justify-content: space-between; 
+  max-width: 1700px; margin: 0 auto 10px auto; padding: 27px 20px;
+}
+
+.brand-section { display: flex; flex-direction: column; flex-grow: 1; }
+
+h1 { 
+  display: flex; align-items: center; margin: 0; font-weight: 500; 
+  letter-spacing: 1px; color: var(--text-main); font-size: 1.7rem;
+}
+
+#weather-icon-img { width: 55px; height: 55px; margin-right: 15px; }
+
+#alarm-display {
+  margin: 0 10px; padding: 2px 10px; border-radius: 4px;
+  font-weight: 700; font-size: 0.8rem; display: none;
+  text-transform: uppercase; box-shadow: 0 0 10px rgba(0,0,0,0.2);
+  vertical-align: middle;
+}
+
+.alarm-active { display: inline-block !important; animation: blinker 3s linear infinite; }
+
+.critical-alarm {
+  border: 2px solid var(--alarm-red) !important;
+  box-shadow: 0 0 20px rgba(255, 71, 87, 0.4) !important;
+  animation: pulse-red 1.5s infinite;
+}
+
+@keyframes pulse-red {
+  0% { background: var(--card-bg); }
+  50% { background: rgba(255, 71, 87, 0.2); }
+  100% { background: var(--card-bg); }
+}
+
+@keyframes blinker { 50% { opacity: 0.7; } }
+
+.sub-header-info {
+  display: flex; align-items: center; gap: 15px; font-size: 0.85rem; color: var(--text-dim);
+  margin-top: 2px; font-weight: 400;
+}
+.temp-minmax { color: var(--accent-color); font-weight: 600; }
+
+#top-controls { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+
+.controls-row {
+  display: flex; gap: 8px; background: var(--card-bg); padding: 8px 15px; 
+  border-radius: 12px; border: 1px solid var(--glass-border);
+}
+
+.alarm-legend { font-size: 0.7rem; color: var(--text-dim); opacity: 0.6; }
+
+input, select, button { 
+  background: #1e293b; color: white; border: 1px solid var(--glass-border);
+  padding: 8px 12px; border-radius: 8px; outline: none; font-size: 0.9rem; cursor: pointer;
+}
+
+button:hover { background: var(--accent-color); color: var(--bg-color); }
+
+.gauges-group { 
+  display: grid; grid-template-columns: repeat(6, 1fr); 
+  gap: 12px; max-width: 1750px; margin: 0 auto;
+}
+
+@media (max-width: 1400px) {
+  .gauges-group { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+}
+
+.gauge-container { 
+  background: var(--card-bg); backdrop-filter: blur(10px);
+  padding: 12px 8px; border-radius: 18px; border: 1px solid var(--glass-border);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.3); position: relative; transition: all 0.5s ease;
+}
+
+.gauge-title { 
+  font-weight: 600; margin-bottom: 8px; font-size: 0.85rem; 
+  color: var(--text-dim); text-transform: uppercase; text-align: center;
+} 
+
+.trend-arrow { font-size: 1.1rem; font-weight: 900; margin-left: 5px; }
+.trend-up { color: #f87171; }
+.trend-down { color: #60a5fa; }
+.trend-stable { color: #94a3b8; }
+
+canvas.gaugeCanvas { max-width: 195px !important; max-height: 195px !important; display: block; margin: 0 auto; }
+
+/* Styles Vue Mobile Expert */
+#mobileOverlay {
+  display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  background: radial-gradient(circle at top, #1e293b 0%, #0f172a 100%);
+  z-index: 9999; overflow-y: auto; padding: 15px; box-sizing: border-box;
+}
+.m-header-flex { display: flex; justify-content: space-between; align-items: center; }
+.m-city-box { display: flex; align-items: center; gap: 10px; }
+#m-weather-icon { width: 50px; height: 50px; filter: drop-shadow(0 0 5px rgba(56,189,248,0.4)); }
+.m-section-title { font-size: 0.75rem; color: var(--accent-color); text-transform: uppercase; letter-spacing: 1px; margin: 15px 0 8px 5px; font-weight: bold; }
+.mobile-card { background: var(--card-bg); border: 1px solid var(--glass-border); border-radius: 12px; padding: 12px; margin-bottom: 10px; }
+.m-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.m-val { font-size: 1.4rem; font-weight: bold; margin: 4px 0; }
+.m-sub { font-size: 0.75rem; color: var(--text-dim); }
+.m-trend { font-size: 0.9rem; margin-left: 4px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand-section">
+    <h1>
+      <img id="weather-icon-img" src="" alt="" style="display:none;">
+      <span id="titleText">STATION F5IOR</span>
+    </h1>
+    <div class="sub-header-info">
+      <span id="headerUpdate">Initialisation...</span>
+      <span class="temp-minmax">MIN: <span id="tMin">--</span>° | MAX: <span id="tMax">--</span>°</span>
+      <span id="alarm-display"></span> 
+    </div>
+  </div>
+  
+  <div id="top-controls">
+    <div class="alarm-legend">Seuils : Vent > 80 | Temp > 35 | Gel < 0 | UV > 8 | Press < 1000</div>
+    <div class="controls-row">
+        <input type="text" id="cityInput" placeholder="Ville...">
+        <button id="changeCity">OK</button>
+        <select id="favorites">
+          <option value="">⭐ Favoris</option>
+          <option value="Digoin">Digoin</option>
+          <option value="Lyon">Lyon</option>
+          <option value="Gruissan">Gruissan</option>
+          <option value="Bordeaux">Bordeaux</option>
+          <option value="Paris">Paris</option>
+          <option value="Ho Chi Min">Ho Chi Min</option>
+          <option value="Hanoï">Hanoï</option>
+        </select>
+        <button id="geoLocate">📍</button>
+        <button id="mobileView">📱</button>
+        <button id="fullscreen">📺</button>
+    </div>
+  </div>
+</header>
+
+<div class="gauges-group" id="main-dashboard"></div>
+
+<div id="mobileOverlay">
+    <div class="m-header-flex">
+        <div class="m-city-box">
+            <img id="m-weather-icon" src="" alt="">
+            <div>
+                <h2 id="mobileCityTitle" style="margin:0; color:var(--text-main); font-size:1.3rem; line-height:1;">VILLE</h2>
+                <div id="m-update" style="font-size:0.7rem; color:var(--text-dim); margin-top:2px;">MAJ: --</div>
+            </div>
+        </div>
+        <button id="closeMobile" style="background:var(--alarm-red); border:none; border-radius:50%; width:32px; height:32px; font-weight:bold; color:white;">✕</button>
+    </div>
+
+    <div class="mobile-card" style="margin-top: 15px;">
+        <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+            <input type="text" id="m-cityInput" placeholder="Ville..." style="flex-grow: 1; font-size: 0.85rem; background: #0f172a;">
+            <button id="m-changeCity" style="background: var(--accent-color); color: var(--bg-color); font-weight: bold; border:none; padding: 0 15px;">OK</button>
+        </div>
+        <select id="m-favorites" style="width: 100%; background: #0f172a; font-size: 0.85rem;">
+          <option value="">⭐ Mes Favoris</option>
+          <option value="Digoin">Digoin</option>
+          <option value="Lyon">Lyon</option>
+          <option value="Gruissan">Gruissan</option>
+          <option value="Bordeaux">Bordeaux</option>
+          <option value="Paris">Paris</option>
+          <option value="Ho Chi Min">Ho Chi Min</option>
+          <option value="Hanoï">Hanoï</option>
+        </select>
+    </div>
+
+    <div id="m-alert" style="margin-top:10px; padding:12px; border-radius:8px; text-align:center; font-weight:bold; font-size:0.85rem; display:none;"></div>
+
+    <div class="m-section-title">🌡️ Température & Air</div>
+    <div class="m-grid">
+        <div class="mobile-card">
+            <div class="m-sub">Temp / Ressentie</div>
+            <div class="m-val"><span id="m-temp">--</span><span id="m-temp-trend" class="m-trend"></span></div>
+            <div class="m-sub">Ressenti : <span id="m-feel">--</span>°</div>
+        </div>
+        <div class="mobile-card">
+            <div class="m-sub">Air / Humidité</div>
+            <div class="m-val" id="m-hum">--%</div>
+            <div class="m-sub">Qualité : <span id="m-aqi">--</span></div>
+        </div>
+    </div>
+
+    <div class="m-section-title">💨 Vent & Pression</div>
+    <div class="m-grid">
+        <div class="mobile-card">
+            <div class="m-sub">Vent / Rafale</div>
+            <div class="m-val" id="m-wind">--</div>
+            <div class="m-sub">Rafale : <span id="m-gust">--</span></div>
+        </div>
+        <div class="mobile-card">
+            <div class="m-sub">Pression</div>
+            <div class="m-val"><span id="m-press">--</span><span id="m-press-trend" class="m-trend"></span></div>
+            <div class="m-sub" id="m-press-text">Stable</div>
+        </div>
+    </div>
+
+    <div class="m-section-title">☀️ Soleil & UV</div>
+    <div class="m-grid">
+        <div class="mobile-card">
+            <div class="m-sub">Index UV</div>
+            <div class="m-val" id="m-uv">--</div>
+            <div class="m-sub" id="m-uv-risk">Faible</div>
+        </div>
+        <div class="mobile-card">
+            <div class="m-sub">Jour restant</div>
+            <div id="m-sun" style="font-size:0.9rem; font-weight:bold; margin-top:5px; color:var(--accent-color);">Calcul...</div>
+        </div>
+    </div>
+
+    <div class="m-section-title">👕 Conseil Vestimentaire</div>
+    <div class="mobile-card" style="border-left: 4px solid var(--accent-color);">
+        <div id="m-clothe" style="font-size:0.95rem; line-height:1.4;">Analyse des conditions...</div>
+    </div>
+
+    <div class="m-section-title">💡 Conseils Sécurité</div>
+    <div class="mobile-card">
+        <ul id="m-tips" style="padding-left:18px; margin:0; font-size:0.85rem; color:var(--text-dim); line-height:1.5;"></ul>
+    </div>
+    <div style="height:30px;"></div>
+</div>
+
+<script>
+const API_KEY = "ae31f8a6fab7170b6c4e09da4134cb24";
+let LAT = localStorage.getItem("weather_lat") || "46.48";
+let LON = localStorage.getItem("weather_lon") || "3.98";
+let CURRENT_CITY = localStorage.getItem("weather_city") || "Digoin";
+
+let dayMin = Infinity; let dayMax = -Infinity;
+let lastValues = {}; const gauges = {};
+
+const METRICS = [
+  {id:"temp", title:"Température", min:-30, max:60, unit:"°C", threshold: 35, hl: [{from:-30, to:0, color:"rgba(56,189,248,0.3)"}, {from:0, to:25, color:"rgba(74,222,128,0.3)"}, {from:25, to:35, color:"rgba(251,191,36,0.3)"}, {from:35, to:60, color:"rgba(248,113,113,0.3)"}]},
+  {id:"feel", title:"Ressentie", min:-30, max:60, unit:"°C", threshold: 38, hl: []},
+  {id:"dew", title:"Point rosée", min:-30, max:60, unit:"°C", hl:[]},
+  {id:"heatIdx", title:"Indice chaleur", min:-30, max:60, unit:"°C", hl:[]},
+  {id:"wind", title:"Vent", min:0, max:150, unit:"km/h", threshold: 80, hl: [{from:0, to:30, color:"rgba(74,222,128,0.2)"}, {from:30, to:60, color:"rgba(251,191,36,0.3)"}, {from:60, to:100, color:"rgba(251,146,60,0.4)"}, {from:100, to:150, color:"rgba(248,113,113,0.5)"}]},
+  {id:"windDir", title:"Direction", min:0, max:360, unit:"°", hl:[]},
+  {id:"gust", title:"Rafale", min:0, max:150, unit:"km/h", threshold: 100, hl:[]},
+  {id:"hum", title:"Humidité", min:0, max:100, unit:"%", hl: []},
+  {id:"rain", title:"Pluie (1h)", min:0, max:50, unit:"mm", threshold: 10, hl:[{from:0.1, to:50, color:"rgba(56,189,248,0.3)"}]},
+  {id:"rainInt", title:"Intensité", min:0, max:50, unit:"mm/h", hl:[]},
+  {id:"evap", title:"Evaporation", min:0, max:5, unit:"mm/h", hl:[]},
+  {id:"press", title:"Pression", min:950, max:1060, unit:"hPa", hl: [{from:950, to:1000, color:"rgba(248,113,113,0.2)"}, {from:1000, to:1025, color:"rgba(74,222,128,0.2)"}, {from:1025, to:1060, color:"rgba(56,189,248,0.2)"}]},
+  {id:"uv", title:"Indice UV", min:0, max:11, unit:"UV", threshold: 8, hl: [{from:0, to:2, color:"rgba(74,222,128,0.3)"}, {from:3, to:5, color:"rgba(251,191,36,0.3)"}, {from:6, to:7, color:"rgba(251,146,60,0.4)"}, {from:8, to:10, color:"rgba(248,113,113,0.5)"}, {from:11, to:11, color:"rgba(168,85,247,0.5)"}]},
+  {id:"solar", title:"Rayonnement", min:0, max:1200, unit:"W/m²", hl:[]},
+  {id:"cloudBase", title:"Base Nuages", min:0, max:3000, unit:"m", hl:[]},
+  {id:"vis", title:"Visibilité", min:0, max:15, unit:"km", hl:[]},
+  {id:"pressTend", title:"Tend. Pression", min:-5, max:5, unit:"hPa", hl:[]},
+  {id:"absHum", title:"Hum. Absolue", min:0, max:30, unit:"g/m³", hl:[]}
+];
+
+function calcFeelsLike(t, h, w){ 
+  if(t >= 27) return -8.784695 + 1.61139411*t + 2.338549*h - 0.14611605*t*h - 0.012308094*t*t - 0.016424828*h*h + 0.002211732*t*t*h + 0.00072546*t*h*h - 0.000003582*t*t*h*h;
+  if(t <= 10 && w > 4.8) return 13.12 + 0.6215*t - 11.37*Math.pow(w*0.621,0.16) + 0.3965*t*Math.pow(w*0.621,0.16);
+  return t;
+}
+function calcDewPoint(T,H){ const a=17.27,b=237.7,alpha=((a*T)/(b+T))+Math.log(H/100); return (b*alpha)/(a-alpha);}
+function calcCloudBase(T,DP){ return Math.max(0, (T - DP) * 125); }
+function calcAbsHum(T,H){ return (6.112 * Math.exp((17.67 * T)/(T + 243.5)) * H * 2.1674) / (273.15 + T); }
+
+const dashboard = document.getElementById("main-dashboard");
+METRICS.forEach(m=>{
+  const div = document.createElement("div"); div.className = "gauge-container"; div.id = `container_${m.id}`;
+  div.innerHTML = `<div class="gauge-title">${m.title}<span id="trend_${m.id}" class="trend-arrow"></span></div><canvas id="g_${m.id}" class="gaugeCanvas"></canvas>`;
+  dashboard.appendChild(div);
+  let config = {
+    renderTo: 'g_'+m.id, width:195, height:195, units: m.unit, minValue: m.min, maxValue: m.max,
+    colorPlate: "transparent", colorNumbers: "#cbd5e1", colorUnits: "#94a3b8", borders: false,
+    needleType: "arrow", colorNeedle: "#38bdf8", needleWidth: 3, 
+    animationDuration: 1200, animationRule: "dequint",
+    majorTicks: Array.from({length:11},(_,i)=>((m.max-m.min)/10*i+m.min).toFixed(0)),
+    highlights: m.hl, fontNumbersSize: 22, fontUnitsSize: 25, colorMajorTicks: "#475569", colorMinorTicks: "#334155",
+    valueBox: true, colorValueBoxRect: "rgba(0,0,0,0.4)", colorValueText: "#fff", borderValueBox: false, valueInt: 1, valueDec: 1
+  };
+  if(m.id === "windDir") {
+    config.majorTicks = ["N", "NE", "E", "SE", "S", "SO", "O", "NO", "N"];
+    config.minValue = 0; config.maxValue = 360; config.startAngle = 180; config.ticksAngle = 360;
+    config.valueBox = true; config.needleType = "line"; config.needleStart = 65; config.needleEnd = 95;
+    config.needleWidth = 4; config.colorNeedle = "#f87171"; config.highlights = []; config.valueDec = 0;
+  }
+  gauges[m.id] = new RadialGauge(config).draw();
+});
+
+async function updateVigilanceMF(dept) {
+  const alarmDisp = document.getElementById("alarm-display");
+  try {
+    const res = await fetch(`https://public.opendatasoft.com/api/explore/v2.1/catalog/datasets/weatherref-france-vigilance-meteo-departement/records?where=domain_id%3D%22${dept}%22&limit=20`);
+    const data = await res.json();
+    if (data.results && data.results.length > 0) {
+      const maxColorId = Math.max(...data.results.map(r => r.color_id));
+      const config = { 1: { txt: "Vigilance Verte", bg: "#22c55e", color: "#fff" }, 2: { txt: "Vigilance Jaune", bg: "#facc15", color: "#000" }, 3: { txt: "Vigilance Orange", bg: "#f97316", color: "#fff" }, 4: { txt: "Vigilance Rouge", bg: "#ef4444", color: "#fff" } };
+      const status = config[maxColorId] || config[1];
+      alarmDisp.innerText = status.txt; alarmDisp.style.backgroundColor = status.bg; alarmDisp.style.color = status.color; alarmDisp.className = "alarm-active";
+    }
+  } catch(e) { console.error("Vigilance error"); }
+}
+
+async function updateAQI() {
+    try {
+        const res = await fetch(`https://api.openweathermap.org/data/2.5/air_pollution?lat=${LAT}&lon=${LON}&appid=${API_KEY}`);
+        const data = await res.json();
+        const aqi = data.list[0].main.aqi;
+        const labels = ["--", "Excellente", "Moyenne", "Médiocre", "Mauvaise", "Très Mauvaise"];
+        document.getElementById("m-aqi").innerText = labels[aqi] || "--";
+    } catch(e) { document.getElementById("m-aqi").innerText = "Non dispo."; }
+}
+
+async function updateSunCycle() {
+  try {
+    const res = await fetch(`https://api.sunrise-sunset.org/json?lat=${LAT}&lon=${LON}&formatted=0`);
+    const data = await res.json();
+    const sunset = new Date(data.results.sunset); const now = new Date(); const diff = sunset - now;
+    const sunDiv = document.getElementById("m-sun");
+    if (diff > 0) {
+      const hours = Math.floor(diff / 3600000); const mins = Math.floor((diff % 3600000) / 60000);
+      sunDiv.innerHTML = `Coucher à ${sunset.toLocaleTimeString([], {hour: '2h', minute:'2h'})}<br>Reste : ${hours}h ${mins}m`;
+    } else { sunDiv.innerHTML = "Soleil couché 🌙"; }
+  } catch(e) { }
+}
+
+function getTrendIcon(id, val) {
+    if(lastValues[id] === undefined) return "";
+    let diff = val - lastValues[id];
+    if(diff > 0.01) return " <span style='color:#f87171'>▲</span>";
+    if(diff < -0.01) return " <span style='color:#60a5fa'>▼</span>";
+    return " <span style='color:#94a3b8'>▶</span>";
+}
+
+function updateMobileUI() {
+    if (lastValues.temp === undefined) return;
+    document.getElementById("m-update").innerText = "MAJ: " + new Date().toLocaleTimeString();
+    document.getElementById("mobileCityTitle").innerText = CURRENT_CITY.toUpperCase();
+    document.getElementById("m-temp").innerText = lastValues.temp.toFixed(1) + "°";
+    document.getElementById("m-temp-trend").innerHTML = getTrendIcon('temp', lastValues.temp);
+    document.getElementById("m-feel").innerText = lastValues.feel.toFixed(1);
+    document.getElementById("m-hum").innerText = lastValues.hum.toFixed(0) + "%";
+    document.getElementById("m-wind").innerText = lastValues.wind.toFixed(0) + " km/h";
+    document.getElementById("m-gust").innerText = lastValues.gust.toFixed(0) + " km/h";
+    document.getElementById("m-press").innerText = lastValues.press.toFixed(0) + " hPa";
+    document.getElementById("m-press-trend").innerHTML = getTrendIcon('press', lastValues.press);
+    document.getElementById("m-uv").innerText = lastValues.uv.toFixed(1);
+    document.getElementById("m-uv-risk").innerText = lastValues.uv < 3 ? "Faible" : (lastValues.uv < 6 ? "Modéré" : "Élevé");
+    document.getElementById("m-press-text").innerText = lastValues.press < 1010 ? "Dépression" : (lastValues.press > 1020 ? "Anticyclone" : "Stable");
+
+    const cloth = document.getElementById("m-clothe");
+    const t = lastValues.temp; const r = lastValues.rain;
+    if(t < 5) cloth.innerHTML = "❄️ <strong>Grand Froid :</strong> Manteau d'hiver, bonnet, gants et écharpe indispensables.";
+    else if(t < 13) cloth.innerHTML = "🧥 <strong>Frais :</strong> Veste chaude ou gros pull. Écharpe légère recommandée.";
+    else if(t < 20) cloth.innerHTML = "🧥 <strong>Doux :</strong> Un gilet ou une veste légère suffisent.";
+    else if(t < 28) cloth.innerHTML = "👕 <strong>Chaud :</strong> T-shirt ou vêtements légers en coton.";
+    else cloth.innerHTML = "☀️ <strong>Canicule :</strong> Vêtements très légers, chapeau et lunettes.";
+    if(r > 0.2) cloth.innerHTML += "<br>☔ <strong>Alerte Pluie :</strong> Prévoyez un imperméable ou un parapluie.";
+
+    const tips = document.getElementById("m-tips"); tips.innerHTML = "";
+    const addTip = (txt) => { let li = document.createElement("li"); li.innerText = txt; tips.appendChild(li); };
+    if(lastValues.uv > 6) addTip("Protection solaire (indice 30+) conseillée.");
+    if(lastValues.wind > 50) addTip("Attention aux chutes de branches ou objets.");
+    if(lastValues.hum > 85) addTip("Humidité élevée : sensation de lourdeur.");
+    if(lastValues.press < 1000) addTip("Chute de pression : dégradation météo probable.");
+    if(tips.innerHTML === "") addTip("Conditions stables. Bonne journée !");
+}
+
+async function updateWeather(){
+  try{
+    const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${LAT}&lon=${LON}&appid=${API_KEY}&units=metric`);
+    const data = await res.json(); if(!data.main) return;
+    
+    const iconUrl = `https://openweathermap.org/img/wn/${data.weather[0].icon}@2x.png`;
+    document.getElementById("weather-icon-img").src = iconUrl;
+    document.getElementById("weather-icon-img").style.display = "inline-block";
+    document.getElementById("m-weather-icon").src = iconUrl; // Mise à jour mobile
+
+    const temp = data.main.temp; const hum = data.main.humidity; const windKmH = data.wind.speed * 3.6; const press = data.main.pressure; const clouds = data.clouds ? data.clouds.all : 0;
+    
+    if(temp < dayMin) dayMin = temp; if(temp > dayMax) dayMax = temp;
+    document.getElementById("tMin").innerText = dayMin.toFixed(1);
+    document.getElementById("tMax").innerText = dayMax.toFixed(1);
+    document.getElementById("headerUpdate").innerText = "MAJ: " + new Date().toLocaleTimeString();
+
+    const geo = await fetch(`https://api-adresse.data.gouv.fr/reverse/?lon=${LON}&lat=${LAT}`);
+    const geoData = await geo.json();
+    if(geoData.features && geoData.features.length > 0) {
+        updateVigilanceMF(geoData.features[0].properties.context.split(',')[0].trim()); 
+    }
+
+    let uv = 0;
+    try { const uvRes = await fetch(`https://api.openweathermap.org/data/2.5/uvi?lat=${LAT}&lon=${LON}&appid=${API_KEY}`); const uvData = await uvRes.json(); uv = uvData.value || 0; } catch(e){}
+
+    const hour = new Date().getHours();
+    let solarEstimation = (hour > 6 && hour < 20) ? Math.max(0, Math.sin((hour - 6) * Math.PI / 14) * 1000 * (1 - (clouds / 150))) : 0;
+    document.getElementById("titleText").innerText = `F5IOR - MÉTÉO : ${CURRENT_CITY.toUpperCase()}`;
+
+    const values = {
+      temp, feel: calcFeelsLike(temp, hum, data.wind.speed), dew: calcDewPoint(temp, hum), heatIdx: temp, wind: windKmH, windDir: data.wind.deg, 
+      gust: (data.wind.gust || data.wind.speed) * 3.6, hum, rain: data.rain ? (data.rain['1h'] || 0) : 0, rainInt: data.rain ? (data.rain['1h'] || 0) : 0,
+      evap: 0.1 * data.wind.speed * (100 - hum) / 100, press, uv, solar: solarEstimation, cloudBase: calcCloudBase(temp, calcDewPoint(temp, hum)),
+      vis: (data.visibility || 10000) / 1000, pressTend: lastValues.press ? (press - lastValues.press) : 0, absHum: calcAbsHum(temp, hum)
+    };
+
+    METRICS.forEach(m=>{
+      let val = values[m.id] || 0; let trendSpan = document.getElementById("trend_"+m.id); let container = document.getElementById(`container_${m.id}`);
+      if(lastValues[m.id] !== undefined) {
+        let diff = val - lastValues[m.id];
+        if(diff > 0.01) { trendSpan.innerHTML = "▲"; trendSpan.className = "trend-arrow trend-up"; }
+        else if(diff < -0.01) { trendSpan.innerHTML = "▼"; trendSpan.className = "trend-arrow trend-down"; }
+        else { trendSpan.innerHTML = "▶"; trendSpan.className = "trend-arrow trend-stable"; }
+      }
+      if ((m.threshold !== undefined && val >= m.threshold) || (m.id === "temp" && val <= 0) || (m.id === "press" && val < 1000)) { container.classList.add("critical-alarm"); } 
+      else { container.classList.remove("critical-alarm"); }
+      gauges[m.id].value = val;
+    });
+
+    lastValues = {...values};
+    updateAQI(); updateSunCycle();
+    updateMobileUI(); 
+  }catch(e){ console.error(e); }
+}
+
+async function changeCityByName(city){
+  const r = await fetch(`https://api.openweathermap.org/geo/1.0/direct?q=${city}&limit=1&appid=${API_KEY}`);
+  const d = await r.json();
+  if(d.length>0){ 
+    LAT=d[0].lat; LON=d[0].lon; CURRENT_CITY=d[0].name; 
+    localStorage.setItem("weather_lat", LAT); localStorage.setItem("weather_lon", LON); localStorage.setItem("weather_city", CURRENT_CITY);
+    dayMin = Infinity; dayMax = -Infinity;
+    await updateWeather();
+  }
+}
+
+// ÉVÉNEMENTS
+document.getElementById("mobileView").onclick = () => { document.getElementById("mobileOverlay").style.display = "block"; updateWeather(); };
+document.getElementById("closeMobile").onclick = () => document.getElementById("mobileOverlay").style.display = "none";
+document.getElementById("changeCity").onclick = () => changeCityByName(document.getElementById("cityInput").value);
+document.getElementById("favorites").onchange = (e) => { if(e.target.value) changeCityByName(e.target.value); };
+document.getElementById("geoLocate").onclick = () => { if(navigator.geolocation) navigator.geolocation.getCurrentPosition(p=>{LAT=p.coords.latitude; LON=p.coords.longitude; CURRENT_CITY="Position"; updateWeather();}); };
+document.getElementById("fullscreen").onclick = () => !document.fullscreenElement ? document.documentElement.requestFullscreen() : document.exitFullscreen();
+
+document.getElementById("m-changeCity").onclick = () => {
+    const city = document.getElementById("m-cityInput").value;
+    if(city) { changeCityByName(city); document.getElementById("m-cityInput").value = ""; }
+};
+document.getElementById("m-cityInput").addEventListener("keypress", (e) => { if (e.key === "Enter") document.getElementById("m-changeCity").click(); });
+
+document.getElementById("m-favorites").onchange = (e) => { 
+    if(e.target.value) { changeCityByName(e.target.value); setTimeout(() => e.target.value = "", 500); } 
+};
+
+updateWeather(); setInterval(updateWeather, 600000); 
+</script>
+</body>
+</html>
