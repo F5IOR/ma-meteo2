@@ -299,7 +299,7 @@ METRICS.forEach(m=>{
     animationDuration: 1200, animationRule: "dequint",
     majorTicks: Array.from({length:11},(_,i)=>((m.max-m.min)/10*i+m.min).toFixed(0)),
     highlights: m.hl, fontNumbersSize: 22, fontUnitsSize: 25, colorMajorTicks: "#475569", colorMinorTicks: "#334155",
-    valueBox: true, colorValueBoxRect: "rgba(0,0,0,0.4)", colorValueText: "#fff", borderValueBox: false, valueInt: 1, valueDec: 1
+    valueBox: true, colorValueBoxRect: "rgba(0,0,0,0.4)", colorValueText: "#00000", borderValueBox: false, valueInt: 1, valueDec: 1
   };
   if(m.id === "windDir") {
     config.majorTicks = ["N", "NE", "E", "SE", "S", "SO", "O", "NO", "N"];
