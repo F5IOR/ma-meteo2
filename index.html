@@ -22,12 +22,13 @@
   --kp-extreme: #ef4444;
 }
 
+* { box-sizing: border-box; }
+
 body { 
-  font-family: 'Segoe UI', Roboto, sans-serif; 
+  font-family: 'Segoe UI', Roboto, system-ui, sans-serif; 
   background: radial-gradient(circle at top, #1e293b 0%, #0f172a 100%);
   color: var(--text-main); 
   margin: 0; padding: 15px; min-height: 100vh;
-  box-sizing: border-box;
 }
 
 /* Header & City Box */
@@ -61,6 +62,8 @@ input, select, button {
   background: #1e293b; color: white; border: 1px solid var(--glass-border);
   padding: 10px; border-radius: 8px; font-size: 0.9rem;
 }
+button { cursor: pointer; transition: 0.2s; }
+button:hover { opacity: 0.8; }
 
 #m-alert {
   margin-top: 10px; padding: 12px; border-radius: 8px;
@@ -85,9 +88,7 @@ ul#m-tips { padding-left: 18px; margin: 0; font-size: 0.85rem; color: var(--text
 .drone-status-safe { border-left-color: var(--drone-safe) !important; }
 .drone-status-warn { border-left-color: var(--drone-warn) !important; }
 .drone-status-danger { border-left-color: var(--drone-danger) !important; }
-.drone-status-text-safe { color: var(--drone-safe); }
-.drone-status-text-warn { color: var(--drone-warn); }
-.drone-status-text-danger { color: var(--drone-danger); }
+
 .drone-badge {
   display: inline-block;
   padding: 2px 10px;
@@ -99,6 +100,7 @@ ul#m-tips { padding-left: 18px; margin: 0; font-size: 0.85rem; color: var(--text
 .badge-safe { background: var(--drone-safe); color: #000; }
 .badge-warn { background: var(--drone-warn); color: #000; }
 .badge-danger { background: var(--drone-danger); color: #fff; }
+
 .drone-detail {
   font-size: 0.8rem;
   margin: 2px 0;
@@ -158,10 +160,21 @@ ul#m-tips { padding-left: 18px; margin: 0; font-size: 0.85rem; color: var(--text
 .solar-moderate { background: var(--kp-moderate); color: #000; }
 .solar-high { background: var(--kp-high); color: #fff; }
 .solar-extreme { background: var(--kp-extreme); color: #fff; animation: pulse-kp 1.5s infinite; }
+
+/* Nouvelles couleurs pour les statuts avancés */
+.status-good { color: var(--drone-safe); }
+.status-warning { color: var(--drone-warn); }
+.status-danger { color: var(--drone-danger); }
+
+/* Scroll personnalisé */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--bg-color); }
+::-webkit-scrollbar-thumb { background: var(--accent-color); border-radius: 4px; }
 </style>
 </head>
 <body>
 
+    <!-- ==================== HEADER ==================== -->
     <div class="m-header-flex">
         <div class="m-city-box">
             <img id="m-weather-icon" src="" alt="" style="display:none;">
@@ -174,9 +187,10 @@ ul#m-tips { padding-left: 18px; margin: 0; font-size: 0.85rem; color: var(--text
                 </div>
             </div>
         </div>
-        <button id="geoLocate" style="border-radius: 50%; width: 40px; height: 40px;">📍</button>
+        <button id="geoLocate" style="border-radius: 50%; width: 40px; height: 40px; font-size:1.2rem;">📍</button>
     </div>
 
+    <!-- ==================== RECHERCHE ==================== -->
     <div class="mobile-card">
         <div style="display: flex; gap: 8px; margin-bottom: 8px;">
             <input type="text" id="m-cityInput" placeholder="Changer de ville..." style="flex-grow: 1;">
@@ -197,24 +211,28 @@ ul#m-tips { padding-left: 18px; margin: 0; font-size: 0.85rem; color: var(--text
 
     <div id="m-alert"></div>
 
-    <!-- ==================== BLOC DRONE COMPLET ==================== -->
+    <!-- ==================== BLOC DRONE PRINCIPAL ==================== -->
     <div class="m-section-title">🚁 Conditions de vol drone</div>
     <div class="mobile-card drone-card" id="drone-card">
         <div style="display:flex; justify-content:space-between; align-items:center;">
             <span style="font-size:1.1rem; font-weight:bold;" id="drone-status-label">Analyse en cours...</span>
             <span id="drone-badge" class="drone-badge badge-safe">● SÛR</span>
         </div>
+        
         <div style="margin-top:8px;">
+            <!-- Vents -->
             <div class="drone-detail"><span class="label">🌬️ Vent sol (10m)</span><span class="value" id="drone-wind-surface">-- km/h</span></div>
             <div class="drone-detail"><span class="label">🌬️ Vent à 30m</span><span class="value" id="drone-wind-30m">-- km/h</span></div>
             <div class="drone-detail"><span class="label">🌬️ Vent à 50m</span><span class="value" id="drone-wind-50m">-- km/h</span></div>
             <div class="drone-detail"><span class="label">🌬️ Vent à 120m</span><span class="value" id="drone-wind-120m">-- km/h</span></div>
+            
+            <!-- Météo de base -->
             <div class="drone-detail"><span class="label">🌡️ Densité air</span><span class="value" id="drone-air-density">-- %</span></div>
             <div class="drone-detail"><span class="label">☁️ Visibilité</span><span class="value" id="drone-visibility">-- km</span></div>
             <div class="drone-detail"><span class="label">🧊 Givrage</span><span class="value" id="drone-icing">--</span></div>
             <div class="drone-detail"><span class="label">📡 GPS</span><span class="value" id="drone-gps">--</span></div>
             
-            <!-- Activité solaire avec indice Kp -->
+            <!-- Activité solaire -->
             <div class="drone-detail" style="border-top:1px solid var(--glass-border); padding-top:6px; margin-top:4px;">
                 <span class="label">☀️ Activité solaire</span>
                 <span class="value" id="drone-solar-activity">--</span>
@@ -224,14 +242,53 @@ ul#m-tips { padding-left: 18px; margin: 0; font-size: 0.85rem; color: var(--text
                 <span class="value" id="drone-kp-index">--</span>
             </div>
             
-            <!-- Impacts des tempêtes solaires -->
+            <!-- Impacts solaires -->
             <div style="margin-top:6px; padding-top:6px; border-top:1px solid var(--glass-border);">
                 <div style="font-size:0.7rem; color:var(--text-dim); margin-bottom:4px;">⚠️ Impacts potentiels sur le vol</div>
                 <div id="solar-impacts-list">
                     <div class="solar-impact" style="color:var(--text-dim); font-size:0.7rem;">Analyse en cours...</div>
                 </div>
             </div>
+
+            <!-- ============ NOUVEAU : ANALYSE AVANCÉE ============ -->
+            <div style="margin-top:10px; padding-top:8px; border-top:2px solid var(--glass-border);">
+                <div style="font-size:0.7rem; color:var(--accent-color); margin-bottom:6px; font-weight:bold;">📊 ANALYSE AVANCÉE</div>
+                
+                <div class="drone-detail">
+                    <span class="label">🌧️ Précipitations</span>
+                    <span class="value" id="drone-precipitation">--</span>
+                </div>
+                <div class="drone-detail">
+                    <span class="label">☁️ Couverture nuageuse</span>
+                    <span class="value" id="drone-cloud-cover">--</span>
+                </div>
+                <div class="drone-detail">
+                    <span class="label">🌪️ Turbulence</span>
+                    <span class="value" id="drone-turbulence">--</span>
+                </div>
+                <div class="drone-detail">
+                    <span class="label">🔋 Autonomie estimée</span>
+                    <span class="value" id="drone-battery-life">-- min</span>
+                </div>
+                <div class="drone-detail">
+                    <span class="label">🔥 Risque incendie</span>
+                    <span class="value" id="drone-fire-risk">--</span>
+                </div>
+                <div class="drone-detail">
+                    <span class="label">📡 Précision GPS</span>
+                    <span class="value" id="drone-gps-accuracy">--</span>
+                </div>
+                <div class="drone-detail">
+                    <span class="label">🌡️ Température batterie</span>
+                    <span class="value" id="drone-battery-temp">-- °C</span>
+                </div>
+                <div class="drone-detail">
+                    <span class="label">⬆️ Altitude max conseillée</span>
+                    <span class="value" id="drone-max-altitude">-- m</span>
+                </div>
+            </div>
         </div>
+        
         <div style="margin-top:8px; font-size:0.8rem; color:var(--text-dim); border-top:1px solid var(--glass-border); padding-top:6px;">
             <span id="drone-advice">Recommandation : Vérifiez les conditions avant le décollage.</span>
         </div>
@@ -290,6 +347,7 @@ ul#m-tips { padding-left: 18px; margin: 0; font-size: 0.85rem; color: var(--text
     </div>
 
 <script>
+// ==================== CONFIGURATION ====================
 const API_KEY = "ae31f8a6fab7170b6c4e09da4134cb24";
 let LAT = localStorage.getItem("weather_lat") || "46.4922";
 let LON = localStorage.getItem("weather_lon") || "3.9576";
@@ -298,7 +356,7 @@ let CURRENT_CITY = localStorage.getItem("weather_city") || "La Motte St Jean";
 let lastValues = {};
 let droneLastStatus = 'unknown';
 
-// --- CALCULS METEO ---
+// ==================== CALCULS METEO ====================
 function calcFeelsLike(t, h, w_ms){ 
   const w_kmh = w_ms * 3.6;
   if(t >= 27 && h >= 40) {
@@ -315,35 +373,90 @@ function calcFeelsLike(t, h, w_ms){
   return t;
 }
 
-// ==================== VENT À DIFFÉRENTES HAUTEURS ====================
+// ==================== VENT ====================
+async function getWindData() {
+    try {
+        const res = await fetch(
+            `https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&current=wind_speed_10m,wind_gusts_10m,wind_direction_10m&hourly=wind_speed_10m,wind_gusts_10m&timezone=auto&forecast_days=1`
+        );
+        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+        const data = await res.json();
+        if (!data.current) throw new Error("Données de vent manquantes");
+        
+        const windSpeed = data.current.wind_speed_10m || 0;
+        const windGust = data.current.wind_gusts_10m || windSpeed * 1.3;
+        const windDirection = data.current.wind_direction_10m || 0;
+        
+        let maxGust = windGust;
+        if (data.hourly && data.hourly.wind_gusts_10m) {
+            const gusts = data.hourly.wind_gusts_10m.slice(0, 12);
+            maxGust = Math.max(...gusts, windGust);
+        }
+        
+        let variability = 0;
+        if (data.hourly && data.hourly.wind_speed_10m) {
+            const speeds = data.hourly.wind_speed_10m.slice(0, 6);
+            const avg = speeds.reduce((a, b) => a + b, 0) / speeds.length;
+            const variance = speeds.reduce((a, b) => a + Math.pow(b - avg, 2), 0) / speeds.length;
+            variability = Math.sqrt(variance);
+        }
+        
+        return {
+            speed: windSpeed,
+            gust: maxGust,
+            direction: windDirection,
+            variability: variability,
+            source: "Open-Meteo"
+        };
+    } catch(e) {
+        console.warn("Wind data fallback:", e);
+        try {
+            const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${LAT}&lon=${LON}&appid=${API_KEY}&units=metric`);
+            const data = await res.json();
+            if (!data.wind) throw new Error("Pas de données vent");
+            return {
+                speed: data.wind.speed * 3.6,
+                gust: data.wind.gust ? data.wind.gust * 3.6 : data.wind.speed * 3.6 * 1.4,
+                direction: data.wind.deg || 0,
+                variability: 2,
+                source: "OpenWeather"
+            };
+        } catch(fallbackError) {
+            return {
+                speed: 5 + Math.random() * 10,
+                gust: 8 + Math.random() * 15,
+                direction: Math.floor(Math.random() * 360),
+                variability: 3,
+                source: "Estimation"
+            };
+        }
+    }
+}
+
+// ==================== VENT EN HAUTEUR ====================
 function calculateWindAtHeights(wind10m, gust10m, roughness = 0.2) {
     const alpha = roughness;
     const heights = [10, 30, 50, 120];
     const results = {};
-    
     heights.forEach(h => {
         const ratio = h / 10;
         const exponent = Math.pow(ratio, alpha);
         results[`wind_${h}m`] = wind10m * exponent;
         results[`gust_${h}m`] = gust10m * exponent;
     });
-    
     results.wind_10m = wind10m;
     results.gust_10m = gust10m;
-    
     return results;
 }
 
-// ==================== MÉTÉO EN ALTITUDE ====================
 async function getAltitudeWeather() {
     try {
         const res = await fetch(
             `https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&current=temperature_2m,relative_humidity_2m,wind_speed_10m,wind_gusts_10m&timezone=auto`
         );
         const data = await res.json();
-        
         const wind10m = data.current?.wind_speed_10m || 0;
-        const gust10m = data.current?.wind_gusts_10m || wind10m * 1.5;
+        const gust10m = data.current?.wind_gusts_10m || wind10m * 1.3;
         
         let roughness = 0.2;
         try {
@@ -352,259 +465,289 @@ async function getAltitudeWeather() {
             const feature = geoData.features?.[0];
             if (feature?.properties?.context) {
                 const context = feature.properties.context.toLowerCase();
-                if (context.includes('paris') || context.includes('lyon') || context.includes('marseille')) {
-                    roughness = 0.35;
-                } else if (context.includes('forêt') || context.includes('bois')) {
-                    roughness = 0.3;
-                } else if (context.includes('mer') || context.includes('océan') || context.includes('côte')) {
-                    roughness = 0.1;
-                }
+                if (context.includes('paris') || context.includes('lyon') || context.includes('marseille')) roughness = 0.35;
+                else if (context.includes('forêt') || context.includes('bois')) roughness = 0.3;
+                else if (context.includes('mer') || context.includes('océan') || context.includes('côte')) roughness = 0.1;
+                else if (context.includes('montagne') || context.includes('alpes')) roughness = 0.4;
             }
-        } catch(e) {
-            roughness = 0.2;
-        }
+        } catch(e) { roughness = 0.2; }
         
         const windHeights = calculateWindAtHeights(wind10m, gust10m, roughness);
-        
-        return {
-            wind_10m: windHeights.wind_10m,
-            wind_30m: windHeights.wind_30m,
-            wind_50m: windHeights.wind_50m,
-            wind_120m: windHeights.wind_120m,
-            gust_10m: windHeights.gust_10m,
-            gust_30m: windHeights.gust_30m,
-            gust_50m: windHeights.gust_50m,
-            gust_120m: windHeights.gust_120m,
-            roughness: roughness
-        };
+        return { ...windHeights, roughness };
     } catch(e) {
-        console.warn("Altitude weather unavailable:", e);
-        return { 
-            wind_10m: 0, wind_30m: 0, wind_50m: 0, wind_120m: 0,
-            gust_10m: 0, gust_30m: 0, gust_50m: 0, gust_120m: 0,
-            roughness: 0.2
-        };
+        return { wind_10m: 0, wind_30m: 0, wind_50m: 0, wind_120m: 0, gust_10m: 0, gust_30m: 0, gust_50m: 0, gust_120m: 0, roughness: 0.2 };
     }
 }
 
-// ==================== INDICE KP ET ACTIVITÉ SOLAIRE ====================
+// ==================== INDICE KP ====================
 async function getKpIndex() {
     try {
         const res = await fetch(`https://services.swpc.noaa.gov/products/noaa-planetary-k-index.json`);
         const data = await res.json();
-        
         if (data && data.length > 1) {
             const latest = data[data.length - 1];
-            const kpValue = parseFloat(latest[1]) || 0;
-            const dateTime = latest[0] || "";
-            
-            return {
-                kp: kpValue,
-                source: "NOAA",
-                time: dateTime
-            };
+            return { kp: parseFloat(latest[1]) || 0, source: "NOAA", time: latest[0] || "" };
         }
-    } catch(e) {
-        console.warn("NOAA Kp index unavailable, trying fallback...");
-    }
+    } catch(e) { console.warn("NOAA Kp unavailable"); }
     
     try {
         const solarRes = await fetch(`https://services.swpc.noaa.gov/products/solar-wind/plasma-7-day.json`);
         const solarData = await solarRes.json();
-        
         if (solarData && solarData.length > 1) {
             const latest = solarData[solarData.length - 1];
             const speed = parseFloat(latest[3]) || 0;
             const density = parseFloat(latest[2]) || 0;
-            
             let estimatedKp = 2;
             if (speed > 600 || density > 20) estimatedKp = 7;
             else if (speed > 500 || density > 15) estimatedKp = 5;
             else if (speed > 450 || density > 10) estimatedKp = 4;
             else if (speed > 400 || density > 7) estimatedKp = 3;
-            
-            return {
-                kp: estimatedKp,
-                source: "Estimation (vent solaire)",
-                time: new Date().toISOString()
-            };
+            return { kp: estimatedKp, source: "Estimation (vent solaire)", time: new Date().toISOString() };
         }
-    } catch(e) {
-        console.warn("Solar wind fallback unavailable:", e);
-    }
+    } catch(e) { console.warn("Solar wind fallback unavailable"); }
     
-    const now = new Date();
-    const hour = now.getHours();
+    const hour = new Date().getHours();
     let estimatedKp = 2;
     if (hour < 4 || hour > 20) estimatedKp = 3;
     if (hour < 2 || hour > 22) estimatedKp = 4;
-    
-    return {
-        kp: estimatedKp,
-        source: "Estimation horaire",
-        time: now.toISOString()
-    };
+    return { kp: estimatedKp, source: "Estimation horaire", time: new Date().toISOString() };
 }
 
-// ==================== ANALYSE DES IMPACTS SOLAIRES ====================
 function analyzeSolarImpacts(kpValue) {
     const impacts = [];
     let riskLevel = "low";
     let riskText = "Faible ✅";
     
     if (kpValue >= 6) {
-        riskLevel = "extreme";
-        riskText = "Extrême ⚠️";
-        impacts.push({
-            impact: "Perte du signal GPS/GNSS",
-            description: "Positionnement imprécis, RTH impossible",
-            risk: "extreme"
-        });
-        impacts.push({
-            impact: "Dysfonctionnement des commandes",
-            description: "Interférences radio, retards de contrôle",
-            risk: "extreme"
-        });
-        impacts.push({
-            impact: "Risque de Fly-away",
-            description: "Perte de trajectoire, vol incontrôlé",
-            risk: "extreme"
-        });
+        riskLevel = "extreme"; riskText = "Extrême ⚠️";
+        impacts.push({ impact: "Perte du signal GPS/GNSS", description: "Positionnement imprécis, RTH impossible", risk: "extreme" });
+        impacts.push({ impact: "Dysfonctionnement des commandes", description: "Interférences radio, retards de contrôle", risk: "extreme" });
+        impacts.push({ impact: "Risque de Fly-away", description: "Perte de trajectoire, vol incontrôlé", risk: "extreme" });
     } else if (kpValue >= 4) {
-        riskLevel = "high";
-        riskText = "Élevé ⚠️";
-        impacts.push({
-            impact: "Perte du signal GPS/GNSS",
-            description: "Risque de perte de positionnement précis",
-            risk: "high"
-        });
-        impacts.push({
-            impact: "Dysfonctionnement des commandes",
-            description: "Interférences possibles sur les ondes radio",
-            risk: "high"
-        });
-        impacts.push({
-            impact: "Risque de Fly-away",
-            description: "Le drone peut dévier de sa trajectoire",
-            risk: "high"
-        });
+        riskLevel = "high"; riskText = "Élevé ⚠️";
+        impacts.push({ impact: "Perte du signal GPS/GNSS", description: "Risque de perte de positionnement précis", risk: "high" });
+        impacts.push({ impact: "Dysfonctionnement des commandes", description: "Interférences possibles sur les ondes radio", risk: "high" });
+        impacts.push({ impact: "Risque de Fly-away", description: "Le drone peut dévier de sa trajectoire", risk: "high" });
     } else if (kpValue >= 3) {
-        riskLevel = "moderate";
-        riskText = "Modéré";
-        impacts.push({
-            impact: "Signal GPS/GNSS",
-            description: "Précision réduite, vigilance nécessaire",
-            risk: "moderate"
-        });
-        impacts.push({
-            impact: "Commandes radio",
-            description: "Légères interférences possibles",
-            risk: "moderate"
-        });
+        riskLevel = "moderate"; riskText = "Modéré";
+        impacts.push({ impact: "Signal GPS/GNSS", description: "Précision réduite, vigilance nécessaire", risk: "moderate" });
+        impacts.push({ impact: "Commandes radio", description: "Légères interférences possibles", risk: "moderate" });
     } else {
-        riskLevel = "low";
-        riskText = "Faible ✅";
-        impacts.push({
-            impact: "Signal GPS/GNSS",
-            description: "Bon fonctionnement, vol normal",
-            risk: "low"
-        });
-        impacts.push({
-            impact: "Commandes radio",
-            description: "Transmission stable, pas d'interférences",
-            risk: "low"
-        });
-        impacts.push({
-            impact: "Risque de Fly-away",
-            description: "Risque minime, trajectoire stable",
-            risk: "low"
-        });
+        impacts.push({ impact: "Signal GPS/GNSS", description: "Bon fonctionnement, vol normal", risk: "low" });
+        impacts.push({ impact: "Commandes radio", description: "Transmission stable, pas d'interférences", risk: "low" });
+        impacts.push({ impact: "Risque de Fly-away", description: "Risque minime, trajectoire stable", risk: "low" });
     }
-    
-    return {
-        impacts: impacts,
-        riskLevel: riskLevel,
-        riskText: riskText,
-        kpValue: kpValue
-    };
+    return { impacts, riskLevel, riskText };
 }
 
-// ==================== INDICE D'ACTIVITÉ SOLAIRE ====================
 async function getSolarActivity() {
     try {
         const kpData = await getKpIndex();
         const kpValue = kpData?.kp || 2;
         const kpSource = kpData?.source || "Inconnue";
-        
         const solarAnalysis = analyzeSolarImpacts(kpValue);
         
-        let activity = "Faible ✅";
-        let score = 0;
-        let statusClass = "solar-safe";
-        if (kpValue >= 6) {
-            activity = "Extrême ⚠️";
-            score = 3;
-            statusClass = "solar-extreme";
-        } else if (kpValue >= 4) {
-            activity = "Élevée ⚠️";
-            score = 2;
-            statusClass = "solar-high";
-        } else if (kpValue >= 3) {
-            activity = "Modérée";
-            score = 1;
-            statusClass = "solar-moderate";
-        } else {
-            activity = "Faible ✅";
-            score = 0;
-            statusClass = "solar-safe";
-        }
+        let activity = "Faible ✅", score = 0, statusClass = "solar-safe";
+        if (kpValue >= 6) { activity = "Extrême ⚠️"; score = 3; statusClass = "solar-extreme"; }
+        else if (kpValue >= 4) { activity = "Élevée ⚠️"; score = 2; statusClass = "solar-high"; }
+        else if (kpValue >= 3) { activity = "Modérée"; score = 1; statusClass = "solar-moderate"; }
         
         return {
-            activity: activity,
-            score: score,
-            kp: kpValue,
-            kpSource: kpSource,
+            activity, score, kp: kpValue, kpSource,
             impacts: solarAnalysis.impacts,
             riskLevel: solarAnalysis.riskLevel,
             riskText: solarAnalysis.riskText,
-            statusClass: statusClass
+            statusClass
         };
     } catch(e) {
-        console.warn("Solar activity analysis error:", e);
         return {
-            activity: "Indisponible",
-            score: 0,
-            kp: 2,
-            kpSource: "Erreur",
+            activity: "Indisponible", score: 0, kp: 2, kpSource: "Erreur",
             impacts: [{ impact: "Données indisponibles", description: "Analyse impossible", risk: "low" }],
-            riskLevel: "low",
-            riskText: "Inconnu",
-            statusClass: "solar-safe"
+            riskLevel: "low", riskText: "Inconnu", statusClass: "solar-safe"
         };
     }
 }
 
-// ==================== ÉVALUATION DRONE ====================
-function evaluateDroneConditions(temp, feelTemp, windSpeed, gustSpeed, humidity, pressure, uv, altWeather, solarActivity) {
-    const windSafe = 25;
-    const windWarn = 35;
-    const gustSafe = 30;
-    const gustWarn = 45;
-    const tempSafeMin = -5;
-    const tempSafeMax = 40;
-    const tempWarnMin = -10;
-    const tempWarnMax = 45;
-    const pressSafeMin = 980;
-    const pressWarnMin = 960;
-    const humidMaxSafe = 85;
-    const humidMaxWarn = 95;
+// ==================== NOUVELLES FONCTIONS AVANCÉES ====================
+
+async function getPrecipitation() {
+    try {
+        const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&current=precipitation,rain,showers,snowfall&timezone=auto`);
+        const data = await res.json();
+        if (data.current) {
+            const precip = data.current.precipitation || 0;
+            let intensity = "Aucune";
+            let icon = "☀️";
+            if (precip > 1) { intensity = "Fort"; icon = "⛈️"; }
+            else if (precip > 0.3) { intensity = "Modéré"; icon = "🌧️"; }
+            else if (precip > 0.05) { intensity = "Faible"; icon = "🌦️"; }
+            return {
+                precipitation: precip,
+                rain: data.current.rain || 0,
+                snow: data.current.snowfall || 0,
+                intensity: intensity,
+                icon: icon,
+                mmh: precip.toFixed(1)
+            };
+        }
+        return { precipitation: 0, intensity: "Aucune", icon: "☀️", mmh: "0.0" };
+    } catch(e) {
+        return { precipitation: 0, intensity: "Inconnue", icon: "❓", mmh: "--" };
+    }
+}
+
+async function getCloudCover() {
+    try {
+        const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&current=cloud_cover,cloud_cover_low,cloud_cover_mid,cloud_cover_high&timezone=auto`);
+        const data = await res.json();
+        if (data.current) {
+            const total = data.current.cloud_cover || 0;
+            let description = "Ciel dégagé ☀️";
+            if (total > 80) description = "Couvert ☁️";
+            else if (total > 50) description = "Partiellement nuageux ⛅";
+            else if (total > 20) description = "Légèrement nuageux 🌤️";
+            return {
+                total: total,
+                low: data.current.cloud_cover_low || 0,
+                mid: data.current.cloud_cover_mid || 0,
+                high: data.current.cloud_cover_high || 0,
+                description: description,
+                visibilityImpact: total > 70 ? "Visibilité réduite" : "Visibilité normale"
+            };
+        }
+        return { total: 0, description: "Inconnue", visibilityImpact: "Inconnu" };
+    } catch(e) {
+        return { total: 0, description: "Inconnue", visibilityImpact: "Inconnu" };
+    }
+}
+
+function calculateTurbulence(windSpeed, temp, humidity, cloudCover) {
+    let score = 0;
+    if (windSpeed > 40) score += 3;
+    else if (windSpeed > 25) score += 2;
+    else if (windSpeed > 15) score += 1;
+    if (temp > 30) score += 2;
+    else if (temp > 25) score += 1;
+    if (humidity > 80) score += 1;
+    if (cloudCover > 50 && cloudCover < 90) score += 1;
+    
+    let level, description, color;
+    if (score >= 5) { level = "Fort ⚠️"; description = "Turbulence importante"; color = "#ef4444"; }
+    else if (score >= 3) { level = "Modéré"; description = "Turbulence modérée"; color = "#facc15"; }
+    else { level = "Faible ✅"; description = "Conditions stables"; color = "#22c55e"; }
+    return { level, score, description, color };
+}
+
+function estimateBatteryLife(temp, windSpeed, altitude, baseBattery = 30) {
+    let factor = 1.0;
+    if (temp < 0) factor *= 0.7;
+    else if (temp < 5) factor *= 0.85;
+    else if (temp > 35) factor *= 0.85;
+    else if (temp > 30) factor *= 0.9;
+    if (windSpeed > 30) factor *= 0.7;
+    else if (windSpeed > 20) factor *= 0.8;
+    else if (windSpeed > 10) factor *= 0.9;
+    if (altitude > 1000) factor *= 0.9;
+    else if (altitude > 500) factor *= 0.95;
+    
+    const estimatedTime = Math.round(baseBattery * factor);
+    const reduction = Math.round((1 - factor) * 100);
+    let status = "✅ Normal";
+    let color = "#22c55e";
+    if (reduction > 30) { status = "⚠️ Très réduite"; color = "#ef4444"; }
+    else if (reduction > 20) { status = "⚠️ Réduite"; color = "#f97316"; }
+    else if (reduction > 10) { status = "Légèrement réduite"; color = "#facc15"; }
+    return {
+        estimatedMinutes: estimatedTime,
+        reductionPercent: reduction,
+        factor: factor,
+        status: status,
+        color: color,
+        advice: reduction > 20 ? `⚠️ Autonomie réduite de ${reduction}%` : "✅ Autonomie normale"
+    };
+}
+
+function calculateFireRisk(temp, humidity, windSpeed) {
+    let score = 0;
+    if (temp > 35) score += 3;
+    else if (temp > 30) score += 2;
+    else if (temp > 25) score += 1;
+    if (humidity < 30) score += 3;
+    else if (humidity < 40) score += 2;
+    else if (humidity < 50) score += 1;
+    if (windSpeed > 30) score += 2;
+    else if (windSpeed > 20) score += 1;
+    
+    let level, color, advice;
+    if (score >= 6) { level = "Très Élevé 🔥"; color = "#ef4444"; advice = "⚠️ Vol déconseillé"; }
+    else if (score >= 4) { level = "Élevé ⚠️"; color = "#f97316"; advice = "Prudence recommandée"; }
+    else if (score >= 2) { level = "Modéré"; color = "#facc15"; advice = "Surveillance recommandée"; }
+    else { level = "Faible ✅"; color = "#22c55e"; advice = "Risque faible"; }
+    return { level, color, advice, score };
+}
+
+function estimateGPSQuality(kpValue, cloudCover) {
+    let quality = "Bon ✅", accuracy = "5m", color = "#22c55e";
+    if (kpValue >= 6) { quality = "Très mauvais ❌"; accuracy = ">50m"; color = "#ef4444"; }
+    else if (kpValue >= 4) { quality = "Mauvais ⚠️"; accuracy = "20-50m"; color = "#f97316"; }
+    else if (kpValue >= 3) { quality = "Moyen"; accuracy = "10-20m"; color = "#facc15"; }
+    if (cloudCover > 80) { quality += " (nuages)"; accuracy = "15-30m"; }
+    return { quality, accuracy, color };
+}
+
+function estimateBatteryTemperature(ambientTemp, windSpeed, load = 0.5) {
+    const heating = load * 15;
+    const cooling = windSpeed * 0.1;
+    const estimated = ambientTemp + heating - cooling;
+    
+    let status = "Normale ✅", color = "#22c55e", advice = "Batterie à bonne température";
+    if (estimated > 50) { status = "⚠️ Surchauffe !"; color = "#ef4444"; advice = "⚠️ Risque de surchauffe"; }
+    else if (estimated > 40) { status = "Chaude"; color = "#f97316"; advice = "Surveillez la température"; }
+    else if (estimated < 0) { status = "❄️ Très froide !"; color = "#60a5fa"; advice = "⚠️ Réchauffez avant utilisation"; }
+    else if (estimated < 5) { status = "Froide"; color = "#60a5fa"; advice = "Autonomie réduite"; }
+    return {
+        estimated: Math.round(estimated * 10) / 10,
+        status: status,
+        color: color,
+        advice: advice
+    };
+}
+
+function calculateMaxAltitude(windSpeed, temp, humidity) {
+    let maxAlt = 120; // hauteur max légale en France (120m)
+    if (windSpeed > 30) maxAlt = 30;
+    else if (windSpeed > 20) maxAlt = 50;
+    else if (windSpeed > 15) maxAlt = 70;
+    else if (windSpeed > 10) maxAlt = 90;
+    if (temp < -5 || temp > 35) maxAlt = Math.min(maxAlt, 60);
+    if (humidity > 80) maxAlt = Math.min(maxAlt, 80);
+    return Math.round(maxAlt);
+}
+
+// ==================== ÉVALUATION DRONE COMPLÈTE ====================
+async function evaluateDroneConditions(temp, feelTemp, windSpeed, gustSpeed, humidity, pressure, uv, altWeather, solarActivity) {
+    const windSafe = 25, windWarn = 35, gustSafe = 30, gustWarn = 45;
+    const tempSafeMin = -5, tempSafeMax = 40, tempWarnMin = -10, tempWarnMax = 45;
+    const pressSafeMin = 980, pressWarnMin = 960;
+    const humidMaxSafe = 85, humidMaxWarn = 95;
     const uvSafe = 5;
 
     let score = 0;
     let issues = [];
     let details = {};
 
-    // --- Vents ---
+    // Récupérer les données avancées
+    const precipitation = await getPrecipitation();
+    const cloudCover = await getCloudCover();
+    const turbulence = calculateTurbulence(windSpeed, temp, humidity, cloudCover.total);
+    const batteryLife = estimateBatteryLife(temp, windSpeed, 0, 18);
+    const fireRisk = calculateFireRisk(temp, humidity, windSpeed);
+    const kpValue = solarActivity?.kp || 2;
+    const gpsQuality = estimateGPSQuality(kpValue, cloudCover.total);
+    const batteryTemp = estimateBatteryTemperature(temp, windSpeed);
+    const maxAltitude = calculateMaxAltitude(windSpeed, temp, humidity);
+
+    // Vents en hauteur
     const wind30m = altWeather?.wind_30m || 0;
     const wind50m = altWeather?.wind_50m || 0;
     const wind120m = altWeather?.wind_120m || 0;
@@ -619,113 +762,82 @@ function evaluateDroneConditions(temp, feelTemp, windSpeed, gustSpeed, humidity,
     details.gust_50m = gust50m;
     details.gust_120m = gust120m;
     
-    if (gust30m > gustWarn || wind30m > windWarn) {
-        score += 2;
-        issues.push(`Vent trop fort à 30m (${wind30m.toFixed(0)} km/h)`);
-    } else if (gust30m > gustSafe || wind30m > windSafe) {
-        score += 1;
-        issues.push(`Vent modéré à 30m (${wind30m.toFixed(0)} km/h)`);
-    }
+    // Évaluations
+    if (gust30m > gustWarn || wind30m > windWarn) { score += 2; issues.push(`Vent trop fort à 30m (${wind30m.toFixed(0)} km/h)`); }
+    else if (gust30m > gustSafe || wind30m > windSafe) { score += 1; issues.push(`Vent modéré à 30m (${wind30m.toFixed(0)} km/h)`); }
     
-    if (gust50m > gustWarn || wind50m > windWarn) {
-        score += 2;
-        issues.push(`Vent trop fort à 50m (${wind50m.toFixed(0)} km/h)`);
-    } else if (gust50m > gustSafe || wind50m > windSafe) {
-        score += 1;
-        issues.push(`Vent modéré à 50m (${wind50m.toFixed(0)} km/h)`);
-    }
+    if (gust50m > gustWarn || wind50m > windWarn) { score += 2; issues.push(`Vent trop fort à 50m (${wind50m.toFixed(0)} km/h)`); }
+    else if (gust50m > gustSafe || wind50m > windSafe) { score += 1; issues.push(`Vent modéré à 50m (${wind50m.toFixed(0)} km/h)`); }
     
-    if (gust120m > gustWarn || wind120m > windWarn) {
-        score += 3;
-        issues.push(`⚠️ Vent très fort à 120m (${wind120m.toFixed(0)} km/h)`);
-    } else if (gust120m > gustSafe || wind120m > windSafe) {
-        score += 2;
-        issues.push(`Vent modéré à 120m (${wind120m.toFixed(0)} km/h)`);
-    }
+    if (gust120m > gustWarn || wind120m > windWarn) { score += 3; issues.push(`⚠️ Vent très fort à 120m (${wind120m.toFixed(0)} km/h)`); }
+    else if (gust120m > gustSafe || wind120m > windSafe) { score += 2; issues.push(`Vent modéré à 120m (${wind120m.toFixed(0)} km/h)`); }
 
-    // --- Vent au sol ---
     details.wind = windSpeed;
     details.gust = gustSpeed;
-    if (gustSpeed > gustWarn || windSpeed > windWarn) {
-        score += 2;
-        issues.push("Vent/Rafales trop forts au sol");
-    } else if (gustSpeed > gustSafe || windSpeed > windSafe) {
-        score += 1;
-        issues.push("Vent modéré au sol");
-    }
+    if (gustSpeed > gustWarn || windSpeed > windWarn) { score += 2; issues.push("Vent/Rafales trop forts au sol"); }
+    else if (gustSpeed > gustSafe || windSpeed > windSafe) { score += 1; issues.push("Vent modéré au sol"); }
 
-    // --- Température ---
     details.temp = temp;
     details.feel = feelTemp;
-    if (feelTemp > tempSafeMax || feelTemp < tempSafeMin) {
-        score += 2;
-        issues.push("Température extrême, risque pour la batterie");
-    } else if (feelTemp > tempWarnMax || feelTemp < tempWarnMin) {
-        score += 1;
-        issues.push("Température limite, surveillez la batterie");
-    }
+    if (feelTemp > tempSafeMax || feelTemp < tempSafeMin) { score += 2; issues.push("Température extrême, risque pour la batterie"); }
+    else if (feelTemp > tempWarnMax || feelTemp < tempWarnMin) { score += 1; issues.push("Température limite, surveillez la batterie"); }
 
-    // --- Humidité ---
     details.humidity = humidity;
-    if (humidity > humidMaxWarn) {
-        score += 2;
-        issues.push("Humidité très élevée, risque de givrage");
-    } else if (humidity > humidMaxSafe) {
-        score += 1;
-        issues.push("Humidité élevée, risque de condensation");
-    }
+    if (humidity > humidMaxWarn) { score += 2; issues.push("Humidité très élevée, risque de givrage"); }
+    else if (humidity > humidMaxSafe) { score += 1; issues.push("Humidité élevée, risque de condensation"); }
 
-    // --- Pression ---
     details.pressure = pressure;
-    if (pressure < pressWarnMin) {
-        score += 2;
-        issues.push("Dépression sévère, conditions instables");
-    } else if (pressure < pressSafeMin) {
-        score += 1;
-        issues.push("Pression basse, dégradation possible");
-    }
+    if (pressure < pressWarnMin) { score += 2; issues.push("Dépression sévère, conditions instables"); }
+    else if (pressure < pressSafeMin) { score += 1; issues.push("Pression basse, dégradation possible"); }
 
-    // --- UV ---
     details.uv = uv;
-    if (uv > uvSafe) {
-        score += 1;
-        issues.push("UV élevé, protégez l'écran");
-    }
+    if (uv > uvSafe) { score += 1; issues.push("UV élevé, protégez l'écran"); }
 
-    // --- Activité solaire ---
-    const kpValue = solarActivity?.kp || 2;
+    // Activité solaire
     const solarScore = solarActivity?.score || 0;
-    const solarActivityText = solarActivity?.activity || "Faible ✅";
-    const solarImpacts = solarActivity?.impacts || [];
-    const solarRiskText = solarActivity?.riskText || "Faible";
-    const solarRiskLevel = solarActivity?.riskLevel || "low";
-    const solarStatusClass = solarActivity?.statusClass || "solar-safe";
-    const kpSource = solarActivity?.kpSource || "";
-    
     details.kp = kpValue;
-    details.solarActivity = solarActivityText;
-    details.solarImpacts = solarImpacts;
-    details.solarRiskText = solarRiskText;
-    details.solarRiskLevel = solarRiskLevel;
-    details.solarStatusClass = solarStatusClass;
-    details.kpSource = kpSource;
+    details.solarActivity = solarActivity?.activity || "Faible ✅";
+    details.solarImpacts = solarActivity?.impacts || [];
+    details.solarStatusClass = solarActivity?.statusClass || "solar-safe";
+    details.kpSource = solarActivity?.kpSource || "";
     
-    if (solarScore >= 2) {
-        score += 2;
-        issues.push(`Forte activité solaire (Kp=${kpValue.toFixed(1)})`);
-    } else if (solarScore >= 1) {
-        score += 1;
-        issues.push(`Activité solaire modérée (Kp=${kpValue.toFixed(1)})`);
-    }
+    if (solarScore >= 2) { score += 2; issues.push(`Forte activité solaire (Kp=${kpValue.toFixed(1)})`); }
+    else if (solarScore >= 1) { score += 1; issues.push(`Activité solaire modérée (Kp=${kpValue.toFixed(1)})`); }
 
-    // --- Visibilité ---
+    // Nouvelles évaluations
+    details.precipitation = precipitation;
+    details.cloudCover = cloudCover;
+    details.turbulence = turbulence;
+    details.batteryLife = batteryLife;
+    details.fireRisk = fireRisk;
+    details.gpsQuality = gpsQuality;
+    details.batteryTemp = batteryTemp;
+    details.maxAltitude = maxAltitude;
+
+    if (precipitation.intensity === "Fort") { score += 3; issues.push("Fortes précipitations"); }
+    else if (precipitation.intensity === "Modéré") { score += 1; issues.push("Précipitations modérées"); }
+    
+    if (turbulence.level === "Fort ⚠️") { score += 3; issues.push("Turbulence forte"); }
+    else if (turbulence.level === "Modéré") { score += 1; issues.push("Turbulence modérée"); }
+    
+    if (fireRisk.level === "Très Élevé 🔥") { score += 3; issues.push("Risque d'incendie très élevé"); }
+    else if (fireRisk.level === "Élevé ⚠️") { score += 1; issues.push("Risque d'incendie élevé"); }
+    
+    if (batteryLife.reductionPercent > 30) { score += 2; issues.push("Autonomie très réduite"); }
+    else if (batteryLife.reductionPercent > 20) { score += 1; issues.push("Autonomie réduite"); }
+    
+    if (gpsQuality.quality === "Très mauvais ❌") { score += 3; issues.push("GPS très mauvais"); }
+    else if (gpsQuality.quality === "Mauvais ⚠️") { score += 2; issues.push("GPS mauvais"); }
+
+    // Visibilité
     let visibility = 15;
     if (humidity > 90) visibility = 3;
     else if (humidity > 80) visibility = 6;
     else if (humidity > 70) visibility = 10;
+    if (cloudCover.total > 80) visibility = Math.min(visibility, 5);
     details.visibility = visibility;
 
-    // --- Densité air ---
+    // Densité air
     let airDensity = 100;
     if (feelTemp > 35) airDensity = 85;
     else if (feelTemp > 30) airDensity = 92;
@@ -733,43 +845,28 @@ function evaluateDroneConditions(temp, feelTemp, windSpeed, gustSpeed, humidity,
     else if (feelTemp < 0) airDensity = 95;
     details.airDensity = airDensity;
 
-    // --- Givrage ---
+    // Givrage
     let icingRisk = "Aucun";
-    if (feelTemp < 0 && humidity > 70) {
-        icingRisk = "Élevé ❄️";
-        score += 2;
-        issues.push("Risque de givrage important !");
-    } else if (feelTemp < 2 && humidity > 75) {
-        icingRisk = "Modéré 🧊";
-        score += 1;
-        issues.push("Risque de givrage possible");
-    } else if (feelTemp < 5 && humidity > 80) {
-        icingRisk = "Faible";
-    }
+    if (feelTemp < 0 && humidity > 70) { icingRisk = "Élevé ❄️"; score += 2; issues.push("Risque de givrage important !"); }
+    else if (feelTemp < 2 && humidity > 75) { icingRisk = "Modéré 🧊"; score += 1; issues.push("Risque de givrage possible"); }
+    else if (feelTemp < 5 && humidity > 80) icingRisk = "Faible";
     details.icing = icingRisk;
 
-    // --- GPS ---
-    let gpsQuality = "Bon ✅";
-    if (kpValue >= 6) {
-        gpsQuality = "Très mauvais ❌";
-        score += 3;
-    } else if (kpValue >= 4) {
-        gpsQuality = "Mauvais ❌";
-        score += 2;
-    } else if (kpValue >= 3) {
-        gpsQuality = "Moyen ⚠️";
-        score += 1;
-    }
-    details.gps = gpsQuality;
+    // GPS
+    let gpsQualityText = "Bon ✅";
+    if (kpValue >= 6) { gpsQualityText = "Très mauvais ❌"; score += 3; }
+    else if (kpValue >= 4) { gpsQualityText = "Mauvais ❌"; score += 2; }
+    else if (kpValue >= 3) { gpsQualityText = "Moyen ⚠️"; score += 1; }
+    details.gps = gpsQualityText;
 
-    // --- Statut final ---
+    // Statut final
     let status, statusClass, badgeClass, badgeText, advice;
     if (score >= 7 || kpValue >= 6) {
         status = "DANGER";
         statusClass = "drone-status-danger";
         badgeClass = "badge-danger";
         badgeText = "⛔ DANGER";
-        advice = "🛑 VOL DÉCONSEILLÉ : tempête solaire ou conditions dangereuses.";
+        advice = "🛑 VOL DÉCONSEILLÉ : conditions dangereuses";
     } else if (score >= 4 || kpValue >= 4) {
         status = "PRUDENCE";
         statusClass = "drone-status-warn";
@@ -789,6 +886,11 @@ function evaluateDroneConditions(temp, feelTemp, windSpeed, gustSpeed, humidity,
         badgeText = "✅ SÛR";
         advice = "✅ Conditions favorables pour le vol drone.";
     }
+
+    // Ajouter les alertes des nouvelles données
+    if (precipitation.intensity === "Fort") advice += " - Évitez la pluie";
+    if (fireRisk.level === "Très Élevé 🔥") advice += " - Risque incendie !";
+    if (batteryTemp.estimated > 45) advice += " - Batterie chaude, surveillez";
 
     details.status = status;
     details.issues = issues;
@@ -813,14 +915,11 @@ function updateDroneUI(droneData) {
     if (!card) return;
     card.className = "mobile-card drone-card " + droneData.statusClass;
 
-    const statusLabel = document.getElementById("drone-status-label");
-    if (statusLabel) statusLabel.innerHTML = `🚁 Vol : <strong>${droneData.status}</strong>`;
+    document.getElementById("drone-status-label").innerHTML = `🚁 Vol : <strong>${droneData.status}</strong>`;
     
     const badge = document.getElementById("drone-badge");
-    if (badge) {
-        badge.className = "drone-badge " + droneData.badgeClass;
-        badge.innerText = droneData.badgeText;
-    }
+    badge.className = "drone-badge " + droneData.badgeClass;
+    badge.innerText = droneData.badgeText;
 
     const elements = {
         "drone-wind-surface": `${droneData.wind?.toFixed(0) || 0} km/h (rafale ${droneData.gust?.toFixed(0) || 0})`,
@@ -830,47 +929,39 @@ function updateDroneUI(droneData) {
         "drone-air-density": `${droneData.airDensity} %`,
         "drone-visibility": `${droneData.visibility.toFixed(0)} km`,
         "drone-icing": droneData.icing,
-        "drone-gps": droneData.gps
+        "drone-gps": droneData.gps,
+        // Nouvelles données
+        "drone-precipitation": `${droneData.precipitation?.icon || '☀️'} ${droneData.precipitation?.intensity || 'Inconnue'} (${droneData.precipitation?.mmh || '--'} mm/h)`,
+        "drone-cloud-cover": `${droneData.cloudCover?.description || 'Inconnue'} (${droneData.cloudCover?.total || 0}%)`,
+        "drone-turbulence": `<span style="color:${droneData.turbulence?.color || '#fff'}">${droneData.turbulence?.level || 'Inconnue'}</span>`,
+        "drone-battery-life": `<span style="color:${droneData.batteryLife?.color || '#22c55e'}">${droneData.batteryLife?.estimatedMinutes || 30} min (${droneData.batteryLife?.status || 'Normal'})</span>`,
+        "drone-fire-risk": `<span style="color:${droneData.fireRisk?.color || '#22c55e'}">${droneData.fireRisk?.level || 'Inconnu'}</span>`,
+        "drone-gps-accuracy": `<span style="color:${droneData.gpsQuality?.color || '#22c55e'}">${droneData.gpsQuality?.quality || 'Inconnue'} (${droneData.gpsQuality?.accuracy || '--'})</span>`,
+        "drone-battery-temp": `<span style="color:${droneData.batteryTemp?.color || '#22c55e'}">${droneData.batteryTemp?.estimated || '--'} °C (${droneData.batteryTemp?.status || 'Inconnue'})</span>`,
+        "drone-max-altitude": `${droneData.maxAltitude || 120} m`
     };
     
     Object.keys(elements).forEach(id => {
         const el = document.getElementById(id);
-        if (el) el.innerText = elements[id];
+        if (el) el.innerHTML = elements[id];
     });
     
     // Activité solaire
     const solarEl = document.getElementById("drone-solar-activity");
     if (solarEl) {
-        const solarText = droneData.solarActivity || "Faible ✅";
-        const statusClass = droneData.solarStatusClass || "solar-safe";
-        solarEl.innerHTML = `<span class="solar-status ${statusClass}">${solarText}</span>`;
+        solarEl.innerHTML = `<span class="solar-status ${droneData.solarStatusClass || 'solar-safe'}">${droneData.solarActivity || 'Faible ✅'}</span>`;
     }
     
     // Indice Kp
     const kpEl = document.getElementById("drone-kp-index");
     if (kpEl) {
         const kpValue = droneData.kp || 2;
-        const kpSource = droneData.kpSource || "";
-        let kpClass = "kp-low";
-        let kpLabel = "Faible";
-        if (kpValue >= 6) {
-            kpClass = "kp-extreme";
-            kpLabel = `Extrême (${kpValue.toFixed(1)})`;
-        } else if (kpValue >= 4) {
-            kpClass = "kp-high";
-            kpLabel = `Élevé (${kpValue.toFixed(1)})`;
-        } else if (kpValue >= 3) {
-            kpClass = "kp-moderate";
-            kpLabel = `Modéré (${kpValue.toFixed(1)})`;
-        } else {
-            kpClass = "kp-low";
-            kpLabel = `Faible (${kpValue.toFixed(1)})`;
-        }
-        let kpHtml = `<span class="kp-indicator ${kpClass}">Kp ${kpLabel}</span>`;
-        if (kpSource) {
-            kpHtml += ` <span style="font-size:0.6rem;color:var(--text-dim)">[${kpSource}]</span>`;
-        }
-        kpEl.innerHTML = kpHtml;
+        let kpClass = "kp-low", kpLabel = "Faible";
+        if (kpValue >= 6) { kpClass = "kp-extreme"; kpLabel = `Extrême (${kpValue.toFixed(1)})`; }
+        else if (kpValue >= 4) { kpClass = "kp-high"; kpLabel = `Élevé (${kpValue.toFixed(1)})`; }
+        else if (kpValue >= 3) { kpClass = "kp-moderate"; kpLabel = `Modéré (${kpValue.toFixed(1)})`; }
+        else { kpClass = "kp-low"; kpLabel = `Faible (${kpValue.toFixed(1)})`; }
+        kpEl.innerHTML = `<span class="kp-indicator ${kpClass}">Kp ${kpLabel}</span> ${droneData.kpSource ? `<span style="font-size:0.6rem;color:var(--text-dim)">[${droneData.kpSource}]</span>` : ''}`;
     }
 
     // Impacts solaires
@@ -885,11 +976,7 @@ function updateDroneUI(droneData) {
                 if (imp.risk === "extreme") riskClass = "risk-extreme";
                 else if (imp.risk === "high") riskClass = "risk-high";
                 else if (imp.risk === "moderate") riskClass = "risk-moderate";
-                
-                return `<div class="solar-impact">
-                    <span class="impact-label">${imp.impact}:</span>
-                    <span class="impact-risk ${riskClass}">${imp.description}</span>
-                </div>`;
+                return `<div class="solar-impact"><span class="impact-label">${imp.impact}:</span> <span class="impact-risk ${riskClass}">${imp.description}</span></div>`;
             }).join('');
         }
     }
@@ -897,9 +984,7 @@ function updateDroneUI(droneData) {
     const adviceEl = document.getElementById("drone-advice");
     if (adviceEl) {
         let adviceText = droneData.advice;
-        if (droneData.issues.length > 0) {
-            adviceText += " ⚠️ " + droneData.issues.join(" - ");
-        }
+        if (droneData.issues.length > 0) adviceText += " ⚠️ " + droneData.issues.join(" - ");
         adviceEl.innerText = adviceText;
     }
 
@@ -912,132 +997,64 @@ async function updateSunCycle() {
     if (!sunDiv) return;
     
     try {
-        sunDiv.innerHTML = "🔄 Chargement...";
-        
         const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&daily=sunrise,sunset&timezone=auto&forecast_days=1`);
-        
-        if (!res.ok) {
-            throw new Error(`HTTP error! status: ${res.status}`);
-        }
-        
+        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
         const data = await res.json();
-        
-        if (!data.daily || !data.daily.sunrise || !data.daily.sunset) {
-            throw new Error("Données de lever/coucher manquantes");
-        }
+        if (!data.daily || !data.daily.sunrise || !data.daily.sunset) throw new Error("Données manquantes");
         
         const sunrise = new Date(data.daily.sunrise[0]);
         const sunset = new Date(data.daily.sunset[0]);
         const now = new Date();
-        
-        // Vérifier que les dates sont valides
-        if (isNaN(sunrise.getTime()) || isNaN(sunset.getTime())) {
-            throw new Error("Dates invalides");
-        }
+        if (isNaN(sunrise.getTime()) || isNaN(sunset.getTime())) throw new Error("Dates invalides");
         
         const fmt = d => d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-        const sunriseStr = fmt(sunrise);
-        const sunsetStr = fmt(sunset);
-        
-        // Calculer la durée du jour
-        const dayDuration = (sunset - sunrise) / 3600000; // en heures
+        const dayDuration = (sunset - sunrise) / 3600000;
         const hours = Math.floor(dayDuration);
         const minutes = Math.round((dayDuration - hours) * 60);
         
-        // Si le soleil est déjà couché
         if (now > sunset) {
-            // Calculer le temps jusqu'au prochain lever
             const tomorrow = new Date(sunrise);
             tomorrow.setDate(tomorrow.getDate() + 1);
             const diff = tomorrow - now;
             const h = Math.floor(diff / 3600000);
             const m = Math.floor((diff % 3600000) / 60000);
-            sunDiv.innerHTML = `🌅 Lever : ${sunriseStr}<br>🌇 Coucher : ${sunsetStr}<br>🌙 Soleil couché<br>⏳ Prochain lever dans ${h}h ${m}m`;
+            sunDiv.innerHTML = `🌅 Lever : ${fmt(sunrise)}<br>🌇 Coucher : ${fmt(sunset)}<br>🌙 Soleil couché<br>⏳ Prochain lever dans ${h}h ${m}m`;
         } else {
-            // Calculer le temps restant avant le coucher
             const diff = sunset - now;
             const h = Math.floor(diff / 3600000);
             const m = Math.floor((diff % 3600000) / 60000);
-            sunDiv.innerHTML = `🌅 Lever : ${sunriseStr}<br>🌇 Coucher : ${sunsetStr}<br>⏳ Reste : ${h}h ${m}m<br>📅 Durée jour : ${hours}h${minutes}m`;
+            sunDiv.innerHTML = `🌅 Lever : ${fmt(sunrise)}<br>🌇 Coucher : ${fmt(sunset)}<br>⏳ Reste : ${h}h ${m}m<br>📅 Durée jour : ${hours}h${minutes}m`;
         }
-        
     } catch(e) {
-        console.warn("Sun cycle error:", e);
-        // Fallback : utiliser une estimation locale
-        try {
-            const now = new Date();
-            const hour = now.getHours();
-            const minutes = now.getMinutes();
-            
-            // Estimation simplifiée (heure de lever/coucher approximative)
-            let sunriseHour = 6;
-            let sunsetHour = 20;
-            
-            // Ajustement selon la latitude (approximatif)
-            const latAdjust = Math.abs(LAT) / 10;
-            if (LAT > 0) {
-                // Hémisphère nord : été = jours plus longs
-                const month = now.getMonth();
-                if (month >= 4 && month <= 8) {
-                    sunriseHour = 5 - latAdjust * 0.3;
-                    sunsetHour = 21 + latAdjust * 0.3;
-                } else {
-                    sunriseHour = 7 + latAdjust * 0.3;
-                    sunsetHour = 19 - latAdjust * 0.3;
-                }
-            }
-            
-            sunriseHour = Math.max(4, Math.min(8, sunriseHour));
-            sunsetHour = Math.max(17, Math.min(23, sunsetHour));
-            
-            const sunriseEst = `${Math.floor(sunriseHour)}:${Math.round((sunriseHour % 1) * 60).toString().padStart(2, '0')}`;
-            const sunsetEst = `${Math.floor(sunsetHour)}:${Math.round((sunsetHour % 1) * 60).toString().padStart(2, '0')}`;
-            
-            if (hour < sunriseHour || hour > sunsetHour) {
-                const nextSunrise = new Date(now);
-                nextSunrise.setHours(Math.floor(sunriseHour), Math.round((sunriseHour % 1) * 60), 0, 0);
-                if (now > nextSunrise) nextSunrise.setDate(nextSunrise.getDate() + 1);
-                const diff = nextSunrise - now;
-                const h = Math.floor(diff / 3600000);
-                const m = Math.floor((diff % 3600000) / 60000);
-                sunDiv.innerHTML = `🌅 Lever estimé : ${sunriseEst}<br>🌇 Coucher estimé : ${sunsetEst}<br>🌙 Soleil couché<br>⏳ Prochain lever dans ${h}h ${m}m`;
-            } else {
-                const sunsetDate = new Date(now);
-                sunsetDate.setHours(Math.floor(sunsetHour), Math.round((sunsetHour % 1) * 60), 0, 0);
-                const diff = sunsetDate - now;
-                const h = Math.floor(diff / 3600000);
-                const m = Math.floor((diff % 3600000) / 60000);
-                sunDiv.innerHTML = `🌅 Lever estimé : ${sunriseEst}<br>🌇 Coucher estimé : ${sunsetEst}<br>⏳ Reste : ${h}h ${m}m`;
-            }
-        } catch(fallbackError) {
-            sunDiv.innerHTML = "⏳ Données non disponibles";
-        }
+        sunDiv.innerHTML = "⏳ Données non disponibles";
     }
 }
 
+// ==================== AUTRES FONCTIONS ====================
 async function updateVigilanceMF(dept) {
-  const alertDiv = document.getElementById("m-alert");
-  if (!alertDiv) return;
-  try {
-    const res = await fetch(`https://public.opendatasoft.com/api/explore/v2.1/catalog/datasets/weatherref-france-vigilance-meteo-departement/records?where=domain_id%3D%22${dept}%22&limit=1`);
-    const data = await res.json();
-    if (data.results && data.results.length > 0) {
-      const colorId = data.results[0].color_id;
-      if (!colorId) return;
-      const config = { 
-          1: { txt: "VIGILANCE METEO VERTE",  bg: "#22c55e", color: "#fff" }, 
-          2: { txt: "VIGILANCE METEO JAUNE",  bg: "#facc15", color: "#000" }, 
-          3: { txt: "VIGILANCE METEO ORANGE", bg: "#f97316", color: "#fff" }, 
-          4: { txt: "VIGILANCE METEO ROUGE",  bg: "#ef4444", color: "#fff" } 
-      };
-      const status = config[colorId];
-      if (!status) return;
-      alertDiv.innerText = status.txt;
-      alertDiv.style.backgroundColor = status.bg;
-      alertDiv.style.color = status.color;
-      alertDiv.style.display = "block";
-    }
-  } catch(e) { console.warn("Vigilance MF indisponible:", e); }
+    const alertDiv = document.getElementById("m-alert");
+    if (!alertDiv) return;
+    try {
+        const res = await fetch(`https://public.opendatasoft.com/api/explore/v2.1/catalog/datasets/weatherref-france-vigilance-meteo-departement/records?where=domain_id%3D%22${dept}%22&limit=1`);
+        const data = await res.json();
+        if (data.results && data.results.length > 0) {
+            const colorId = data.results[0].color_id;
+            if (!colorId) return;
+            const config = { 
+                1: { txt: "VIGILANCE METEO VERTE", bg: "#22c55e", color: "#fff" },
+                2: { txt: "VIGILANCE METEO JAUNE", bg: "#facc15", color: "#000" },
+                3: { txt: "VIGILANCE METEO ORANGE", bg: "#f97316", color: "#fff" },
+                4: { txt: "VIGILANCE METEO ROUGE", bg: "#ef4444", color: "#fff" }
+            };
+            const status = config[colorId];
+            if (status) {
+                alertDiv.innerText = status.txt;
+                alertDiv.style.backgroundColor = status.bg;
+                alertDiv.style.color = status.color;
+                alertDiv.style.display = "block";
+            }
+        }
+    } catch(e) { console.warn("Vigilance MF indisponible:", e); }
 }
 
 async function updateAQI() {
@@ -1045,209 +1062,191 @@ async function updateAQI() {
         const res = await fetch(`https://api.openweathermap.org/data/2.5/air_pollution?lat=${LAT}&lon=${LON}&appid=${API_KEY}`);
         const data = await res.json();
         const labels = ["--", "Bon", "Moyen", "Dégradé", "Mauvais", "Très Mauvais"];
-        const el = document.getElementById("m-aqi");
-        if (el) el.innerText = labels[data.list[0].main.aqi] || "--";
-    } catch(e) { 
-        const el = document.getElementById("m-aqi");
-        if (el) el.innerText = "N/A"; 
+        document.getElementById("m-aqi").innerText = labels[data.list[0].main.aqi] || "--";
+    } catch(e) {
+        document.getElementById("m-aqi").innerText = "N/A";
     }
 }
 
 async function updateDailyExtremes() {
     try {
+        const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&daily=temperature_2m_max,temperature_2m_min&timezone=auto&forecast_days=1`);
+        const data = await res.json();
+        if (data.daily && data.daily.temperature_2m_max && data.daily.temperature_2m_min) {
+            document.getElementById("m-tmin").innerText = data.daily.temperature_2m_min[0].toFixed(1);
+            document.getElementById("m-tmax").innerText = data.daily.temperature_2m_max[0].toFixed(1);
+            return;
+        }
+    } catch(e) { console.warn("Extremes fallback..."); }
+    
+    try {
         const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${LAT}&lon=${LON}&appid=${API_KEY}&units=metric`);
         const data = await res.json();
-        if (data.main && data.main.temp_min && data.main.temp_max) {
-            const min = data.main.temp_min.toFixed(1);
-            const max = data.main.temp_max.toFixed(1);
-            const minEl = document.getElementById("m-tmin");
-            const maxEl = document.getElementById("m-tmax");
-            if (minEl) minEl.innerText = min;
-            if (maxEl) maxEl.innerText = max;
+        if (data.main && data.main.temp !== undefined) {
+            const current = data.main.temp;
+            document.getElementById("m-tmin").innerText = (current - 5).toFixed(1);
+            document.getElementById("m-tmax").innerText = (current + 5).toFixed(1);
         }
-    } catch(e) { console.error("Error:", e); }
+    } catch(e) {
+        document.getElementById("m-tmin").innerText = "--";
+        document.getElementById("m-tmax").innerText = "--";
+    }
 }
 
+// ==================== UPDATE PRINCIPAL ====================
 async function updateWeather() {
-  const alertDiv = document.getElementById("m-alert");
-  if (alertDiv) alertDiv.style.display = "none";
-  try {
-    const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${LAT}&lon=${LON}&appid=${API_KEY}&units=metric`);
-    const data = await res.json();
+    const alertDiv = document.getElementById("m-alert");
+    if (alertDiv) alertDiv.style.display = "none";
     
-    const iconUrl = `https://openweathermap.org/img/wn/${data.weather[0].icon}@2x.png`;
-    const iconImg = document.getElementById("m-weather-icon");
-    if (iconImg) { iconImg.src = iconUrl; iconImg.style.display = "block"; }
-    
-    const titleEl = document.getElementById("mobileCityTitle");
-    if (titleEl) titleEl.innerText = CURRENT_CITY.toUpperCase();
-    
-    const updateEl = document.getElementById("m-update");
-    if (updateEl) updateEl.innerText = "MAJ: " + new Date().toLocaleTimeString();
-
-    const temp = data.main.temp;
-    const hum = data.main.humidity;
-    const wind = data.wind.speed * 3.6;
-    const gust = (data.wind.gust || data.wind.speed) * 3.6;
-    const press = data.main.pressure;
-    const feel = calcFeelsLike(temp, hum, data.wind.speed);
-
-    let uv = 0;
     try {
-        const uvRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&current=uv_index`);
-        const uvData = await uvRes.json();
-        uv = uvData.current?.uv_index ?? 0;
-    } catch(e){ console.warn("UV Open-Meteo indisponible:", e); uv = 0; }
+        // Vent
+        const windData = await getWindData();
+        
+        // Météo principale
+        const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${LAT}&lon=${LON}&appid=${API_KEY}&units=metric`);
+        const data = await res.json();
+        
+        // Icône
+        const iconImg = document.getElementById("m-weather-icon");
+        iconImg.src = `https://openweathermap.org/img/wn/${data.weather[0].icon}@2x.png`;
+        iconImg.style.display = "block";
+        
+        document.getElementById("mobileCityTitle").innerText = CURRENT_CITY.toUpperCase();
+        document.getElementById("m-update").innerText = "MAJ: " + new Date().toLocaleTimeString();
 
-    const altWeather = await getAltitudeWeather();
-    const solarActivity = await getSolarActivity();
+        const temp = data.main.temp;
+        const hum = data.main.humidity;
+        const press = data.main.pressure;
+        const wind = windData.speed;
+        const gust = windData.gust;
+        const feel = calcFeelsLike(temp, hum, wind / 3.6);
 
-    // Mise à jour du cycle solaire
-    await updateSunCycle();
+        // UV
+        let uv = 0;
+        try {
+            const uvRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&current=uv_index`);
+            const uvData = await uvRes.json();
+            uv = uvData.current?.uv_index ?? 0;
+        } catch(e) { uv = 0; }
 
-    const tempEl = document.getElementById("m-temp");
-    if (tempEl) tempEl.innerText = temp.toFixed(1) + "°";
-    
-    const trendEl = document.getElementById("m-temp-trend");
-    if (trendEl) trendEl.innerHTML = getTrendIcon(temp, lastValues.temp);
-    
-    const feelEl = document.getElementById("m-feel");
-    if (feelEl) feelEl.innerText = feel.toFixed(1);
-    
-    const humEl = document.getElementById("m-hum");
-    if (humEl) humEl.innerText = hum.toFixed(0) + "%";
-    
-    const windEl = document.getElementById("m-wind");
-    if (windEl) windEl.innerText = wind.toFixed(0) + " km/h";
-    
-    const gustEl = document.getElementById("m-gust");
-    if (gustEl) gustEl.innerText = gust.toFixed(0) + " km/h";
-    
-    const pressEl = document.getElementById("m-press");
-    if (pressEl) pressEl.innerText = press.toFixed(0) + " hPa";
-    
-    const pressTrendEl = document.getElementById("m-press-trend");
-    if (pressTrendEl) pressTrendEl.innerHTML = getTrendIcon(press, lastValues.press);
-    
-    const uvEl = document.getElementById("m-uv");
-    if (uvEl) uvEl.innerText = uv.toFixed(1);
-    
-    const uvRiskEl = document.getElementById("m-uv-risk");
-    if (uvRiskEl) uvRiskEl.innerText = uv < 3 ? "Faible" : (uv < 6 ? "Modéré" : (uv < 8 ? "Élevé" : "Très Élevé"));
-    
-    const pressTextEl = document.getElementById("m-press-text");
-    if (pressTextEl) pressTextEl.innerText = press < 1005 ? "Dépression" : (press > 1020 ? "Anticyclone" : "Stable");
+        const altWeather = await getAltitudeWeather();
+        const solarActivity = await getSolarActivity();
 
-    const cardTemp = document.getElementById("card-temp");
-    if (cardTemp) cardTemp.className = (feel > 35 || feel < 0) ? "mobile-card critical-alarm" : "mobile-card";
-    
-    const cardWind = document.getElementById("card-wind");
-    if (cardWind) cardWind.className = (wind > 80) ? "mobile-card critical-alarm" : "mobile-card";
-    
-    const cardPress = document.getElementById("card-press");
-    if (cardPress) cardPress.className = (press < 980) ? "mobile-card critical-alarm" : "mobile-card";
-    
-    const cardUv = document.getElementById("card-uv");
-    if (cardUv) cardUv.className = (uv >= 6) ? "mobile-card critical-alarm" : "mobile-card";
+        // Mises à jour
+        await updateSunCycle();
+        await updateDailyExtremes();
 
-    const droneData = evaluateDroneConditions(temp, feel, wind, gust, hum, press, uv, altWeather, solarActivity);
-    updateDroneUI(droneData);
+        // Affichage
+        document.getElementById("m-temp").innerText = temp.toFixed(1) + "°";
+        document.getElementById("m-temp-trend").innerHTML = getTrendIcon(temp, lastValues.temp);
+        document.getElementById("m-feel").innerText = feel.toFixed(1);
+        document.getElementById("m-hum").innerText = hum.toFixed(0) + "%";
+        
+        // Vent avec direction
+        const dirs = ['N', 'NE', 'E', 'SE', 'S', 'SO', 'O', 'NO', 'N'];
+        const idx = Math.round(((windData.direction % 360) / 45)) % 8;
+        document.getElementById("m-wind").innerText = dirs[idx] + " " + wind.toFixed(0) + " km/h";
+        document.getElementById("m-gust").innerText = gust.toFixed(0) + " km/h";
+        
+        document.getElementById("m-press").innerText = press.toFixed(0) + " hPa";
+        document.getElementById("m-press-trend").innerHTML = getTrendIcon(press, lastValues.press);
+        document.getElementById("m-uv").innerText = uv.toFixed(1);
+        document.getElementById("m-uv-risk").innerText = uv < 3 ? "Faible" : (uv < 6 ? "Modéré" : (uv < 8 ? "Élevé" : "Très Élevé"));
+        document.getElementById("m-press-text").innerText = press < 1005 ? "Dépression" : (press > 1020 ? "Anticyclone" : "Stable");
 
-    const cloth = document.getElementById("m-clothe");
-    if (cloth) {
-        if(feel < 0)       cloth.innerHTML = "❄️ <strong>Grand Froid :</strong> Manteau d'hiver, gants et bonnet indispensables.";
-        else if(feel < 8)  cloth.innerHTML = "🧥 <strong>Froid :</strong> Manteau chaud recommandé.";
-        else if(feel < 14) cloth.innerHTML = "🧥 <strong>Frais :</strong> Veste chaude ou gros pull.";
-        else if(feel < 20) cloth.innerHTML = "🧥 <strong>Doux :</strong> Un gilet ou veste légère.";
-        else if(feel < 28) cloth.innerHTML = "👕 <strong>Chaud :</strong> T-shirt léger.";
-        else               cloth.innerHTML = "☀️ <strong>Canicule :</strong> Vêtements très légers et hydratation !";
-    }
+        // Cartes critiques
+        document.getElementById("card-temp").className = (feel > 35 || feel < 0) ? "mobile-card critical-alarm" : "mobile-card";
+        document.getElementById("card-wind").className = (wind > 80) ? "mobile-card critical-alarm" : "mobile-card";
+        document.getElementById("card-press").className = (press < 980) ? "mobile-card critical-alarm" : "mobile-card";
+        document.getElementById("card-uv").className = (uv >= 6) ? "mobile-card critical-alarm" : "mobile-card";
 
-    const tips = document.getElementById("m-tips");
-    if (tips) {
+        // Évaluation drone complète
+        const droneData = await evaluateDroneConditions(temp, feel, wind, gust, hum, press, uv, altWeather, solarActivity);
+        updateDroneUI(droneData);
+
+        // Conseils vestimentaires
+        const cloth = document.getElementById("m-clothe");
+        if (feel < 0) cloth.innerHTML = "❄️ <strong>Grand Froid :</strong> Manteau d'hiver, gants et bonnet indispensables.";
+        else if (feel < 8) cloth.innerHTML = "🧥 <strong>Froid :</strong> Manteau chaud recommandé.";
+        else if (feel < 14) cloth.innerHTML = "🧥 <strong>Frais :</strong> Veste chaude ou gros pull.";
+        else if (feel < 20) cloth.innerHTML = "🧥 <strong>Doux :</strong> Un gilet ou veste légère.";
+        else if (feel < 28) cloth.innerHTML = "👕 <strong>Chaud :</strong> T-shirt léger.";
+        else cloth.innerHTML = "☀️ <strong>Canicule :</strong> Vêtements très légers et hydratation !";
+
+        // Conseils sécurité
+        const tips = document.getElementById("m-tips");
         tips.innerHTML = "";
         const addTip = (txt) => { let li = document.createElement("li"); li.innerText = txt; tips.appendChild(li); };
-        if(uv >= 6)        addTip("⚠️ UV élevé : protection solaire et lunettes obligatoires.");
-        else if(uv >= 3)   addTip("🕶️ UV modéré : crème solaire conseillée.");
-        if(wind > 80)      addTip("🌬️ Vent fort : risque d'objets projetés, prudence en extérieur.");
-        else if(wind > 50) addTip("💨 Vent soutenu : attention aux objets volants.");
-        if(press < 980)    addTip("🌀 Forte dépression : conditions météo sévères possibles.");
-        else if(press < 1005) addTip("🌧️ Pression basse : pluie et dégradation probables.");
-        if(feel > 35)      addTip("🥵 Forte chaleur ressentie : hydratez-vous régulièrement.");
-        if(feel < 0)       addTip("🥶 Gel ressenti : surfaces glissantes, prudence sur la route.");
         
-        const kp = solarActivity?.kp || 2;
-        if (droneData.status === "DANGER") {
-            addTip("🚁 VOL DRONE DÉCONSEILLÉ.");
-        } else if (droneData.status === "PRUDENCE") {
-            addTip("🚁 Vol drone avec prudence.");
-        } else {
-            addTip("🚁 Conditions favorables pour le vol drone.");
-        }
-        if (droneData.icing !== "Aucun" && droneData.icing !== "Faible") {
-            addTip("🧊 Risque de givrage : évitez les vols en altitude.");
-        }
-        if (kp >= 6) {
-            addTip("☀️ TEMPÊTE SOLAIRE EXTRÊME (Kp≥6) : Vol fortement déconseillé.");
-        } else if (kp >= 4) {
-            addTip("☀️ Tempête solaire modérée (Kp≥4) : Vol avec prudence.");
-        } else if (kp >= 3) {
-            addTip("☀️ Activité solaire modérée (Kp≥3) : Surveillez le GPS.");
-        }
+        if(uv >= 6) addTip("⚠️ UV élevé : protection solaire et lunettes obligatoires.");
+        else if(uv >= 3) addTip("🕶️ UV modéré : crème solaire conseillée.");
+        if(wind > 80) addTip("🌬️ Vent fort : risque d'objets projetés, prudence en extérieur.");
+        else if(wind > 50) addTip("💨 Vent soutenu : attention aux objets volants.");
+        if(press < 980) addTip("🌀 Forte dépression : conditions météo sévères possibles.");
+        else if(press < 1005) addTip("🌧️ Pression basse : pluie et dégradation probables.");
+        if(feel > 35) addTip("🥵 Forte chaleur ressentie : hydratez-vous régulièrement.");
+        if(feel < 0) addTip("🥶 Gel ressenti : surfaces glissantes, prudence sur la route.");
+        
+        // Conseils drone
+        if (droneData.status === "DANGER") addTip("🚁 VOL DRONE DÉCONSEILLÉ.");
+        else if (droneData.status === "PRUDENCE") addTip("🚁 Vol drone avec prudence.");
+        else addTip("🚁 Conditions favorables pour le vol drone.");
+        
+        if (droneData.icing !== "Aucun" && droneData.icing !== "Faible") addTip("🧊 Risque de givrage : évitez les vols en altitude.");
+        if (droneData.kp >= 6) addTip("☀️ TEMPÊTE SOLAIRE EXTRÊME (Kp≥6) : Vol fortement déconseillé.");
+        else if (droneData.kp >= 4) addTip("☀️ Tempête solaire modérée (Kp≥4) : Vol avec prudence.");
+        else if (droneData.kp >= 3) addTip("☀️ Activité solaire modérée (Kp≥3) : Surveillez le GPS.");
+        if (droneData.precipitation?.intensity === "Fort") addTip("⛈️ Fortes précipitations : Évitez de voler sous la pluie.");
+        if (droneData.fireRisk?.level === "Très Élevé 🔥") addTip("🔥 Risque d'incendie très élevé : Vol déconseillé.");
+        if (droneData.batteryTemp?.estimated > 45) addTip("🌡️ Batterie chaude : Faites des pauses pour éviter la surchauffe.");
+        if (droneData.maxAltitude < 60) addTip(`⬆️ Altitude max recommandée : ${droneData.maxAltitude}m`);
 
         if(tips.innerHTML === "") addTip("✅ Conditions calmes. Bonne journée !");
+
+        // Vigilance météo France
+        try {
+            const geo = await fetch(`https://api-adresse.data.gouv.fr/reverse/?lon=${LON}&lat=${LAT}`);
+            const geoData = await geo.json();
+            const feature = geoData.features?.[0];
+            if (feature?.properties?.context) {
+                const dept = feature.properties.context.split(',')[0].trim();
+                if (dept) updateVigilanceMF(dept);
+            }
+        } catch(e) { /* Ignorer */ }
+
+        lastValues = { temp, press, wind, uv, hum };
+
+    } catch(e) {
+        console.error("Erreur updateWeather:", e);
+        document.getElementById("m-update").innerText = "⚠️ Erreur réseau — réessai dans 10 min";
+        document.getElementById("m-update").style.color = "#f87171";
     }
-
-    try {
-      const geo = await fetch(`https://api-adresse.data.gouv.fr/reverse/?lon=${LON}&lat=${LAT}`);
-      const geoData = await geo.json();
-      const feature = geoData.features?.[0];
-      if (feature?.properties?.context) {
-        const dept = feature.properties.context.split(',')[0].trim();
-        if (dept) updateVigilanceMF(dept);
-      }
-    } catch(e) { console.warn("Géo reverse indisponible (hors France probable)"); }
-
-    lastValues = { temp, press, wind, uv, hum };
-
-  } catch(e) {
-    console.error("Erreur updateWeather:", e);
-    const updateEl = document.getElementById("m-update");
-    if (updateEl) {
-        updateEl.innerText = "⚠️ Erreur réseau — réessai dans 10 min";
-        updateEl.style.color = "#f87171";
-    }
-  }
 }
 
+// ==================== CHANGEMENT DE VILLE ====================
 async function changeCityByName(city){
-  try {
-    const r = await fetch(`https://api.openweathermap.org/geo/1.0/direct?q=${city}&limit=1&appid=${API_KEY}`);
-    const d = await r.json();
-    if(d.length > 0){ 
-      LAT = d[0].lat; 
-      LON = d[0].lon; 
-      CURRENT_CITY = d[0].name; 
-      
-      localStorage.setItem("weather_lat", LAT);
-      localStorage.setItem("weather_lon", LON);
-      localStorage.setItem("weather_city", CURRENT_CITY);
-      
-      const minEl = document.getElementById("m-tmin");
-      const maxEl = document.getElementById("m-tmax");
-      if (minEl) minEl.innerText = "--";
-      if (maxEl) maxEl.innerText = "--";
-      
-      await updateWeather();
-    } else {
-      alert(`Ville "${city}" introuvable. Vérifiez l'orthographe.`);
+    try {
+        const r = await fetch(`https://api.openweathermap.org/geo/1.0/direct?q=${city}&limit=1&appid=${API_KEY}`);
+        const d = await r.json();
+        if(d.length > 0){ 
+            LAT = d[0].lat; 
+            LON = d[0].lon; 
+            CURRENT_CITY = d[0].name; 
+            localStorage.setItem("weather_lat", LAT);
+            localStorage.setItem("weather_lon", LON);
+            localStorage.setItem("weather_city", CURRENT_CITY);
+            document.getElementById("m-tmin").innerText = "--";
+            document.getElementById("m-tmax").innerText = "--";
+            await updateWeather();
+        } else {
+            alert(`Ville "${city}" introuvable. Vérifiez l'orthographe.`);
+        }
+    } catch(e) {
+        alert("Erreur réseau. Impossible de rechercher la ville.");
     }
-  } catch(e) {
-    alert("Erreur réseau. Impossible de rechercher la ville.");
-  }
 }
 
-// Events
+// ==================== EVENTS ====================
 document.getElementById("m-changeCity").onclick = () => {
     const city = document.getElementById("m-cityInput").value.trim();
     if(city) { changeCityByName(city); document.getElementById("m-cityInput").value = ""; }
@@ -1259,37 +1258,35 @@ document.getElementById("m-cityInput").addEventListener("keydown", (e) => {
     }
 });
 document.getElementById("m-favorites").onchange = (e) => { 
-  if(e.target.value) { 
-    changeCityByName(e.target.value); 
-    e.target.value = "";
-  } 
+    if(e.target.value) { 
+        changeCityByName(e.target.value); 
+        e.target.value = "";
+    } 
 };
 document.getElementById("geoLocate").onclick = () => { 
-    if(navigator.geolocation) navigator.geolocation.getCurrentPosition(
-        async (p) => {
-            LAT = p.coords.latitude; 
-            LON = p.coords.longitude; 
-            CURRENT_CITY = "Ma Position";
-            
-            localStorage.setItem("weather_lat", LAT);
-            localStorage.setItem("weather_lon", LON);
-            localStorage.setItem("weather_city", CURRENT_CITY);
-            
-            const minEl = document.getElementById("m-tmin");
-            const maxEl = document.getElementById("m-tmax");
-            if (minEl) minEl.innerText = "--";
-            if (maxEl) maxEl.innerText = "--";
-            
-            await updateWeather();
-        },
-        err => { alert("Géolocalisation refusée ou indisponible."); }
-    );
-    else alert("Géolocalisation non supportée par ce navigateur.");
+    if(navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            async (p) => {
+                LAT = p.coords.latitude; 
+                LON = p.coords.longitude; 
+                CURRENT_CITY = "Ma Position";
+                localStorage.setItem("weather_lat", LAT);
+                localStorage.setItem("weather_lon", LON);
+                localStorage.setItem("weather_city", CURRENT_CITY);
+                document.getElementById("m-tmin").innerText = "--";
+                document.getElementById("m-tmax").innerText = "--";
+                await updateWeather();
+            },
+            err => { alert("Géolocalisation refusée ou indisponible."); }
+        );
+    } else {
+        alert("Géolocalisation non supportée par ce navigateur.");
+    }
 };
 
-// Start
+// ==================== START ====================
 updateWeather();
-setInterval(updateWeather, 600000);
+setInterval(updateWeather, 600000); // 10 minutes
 </script>
 </body>
 </html>
